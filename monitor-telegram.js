@@ -58,7 +58,7 @@ class TronBalanceMonitorWithTelegram {
       // Trích xuất số dư
       const balanceData = {
         address: address,
-        trxBalance: data.balance ? (data.balance / 1000000).toFixed(6) : 0,
+        trxBalance: data.balance ? (data.balance / 1000000).toFixed(8) : '0.00000000',
         tokens: {},
         lastChecked: new Date().toISOString()
       };
@@ -68,7 +68,7 @@ class TronBalanceMonitorWithTelegram {
         for (const token of data.trc20token_balances) {
           balanceData.tokens[token.tokenAbbr] = {
             name: token.tokenName,
-            balance: parseFloat(token.balance),
+            balance: parseFloat(token.balance).toFixed(8),
             tokenId: token.tokenId
           };
         }
@@ -111,7 +111,7 @@ class TronBalanceMonitorWithTelegram {
       } else if (change.direction === 'MỚI') {
         message += `🆕 *${change.type}* mới: \`${change.current}\`\n`;
       } else if (change.direction === 'MẤT') {
-        message += `❌ *${change.type}* mất: \`${change.previous} → 0\`\n`;
+        message += `❌ *${change.type}* mất: \`${change.previous} → 0.00000000\`\n`;
       }
     }
     
@@ -142,9 +142,9 @@ class TronBalanceMonitorWithTelegram {
           const change = currentTrxBalance - prevTrxBalance;
           changes.push({
             type: 'TRX',
-            previous: prevTrxBalance,
-            current: currentTrxBalance,
-            change: change,
+            previous: parseFloat(prevTrxBalance).toFixed(8),
+            current: parseFloat(currentTrxBalance).toFixed(8),
+            change: parseFloat(change).toFixed(8),
             direction: change > 0 ? 'TĂNG' : 'GIẢM'
           });
         }
@@ -158,9 +158,9 @@ class TronBalanceMonitorWithTelegram {
               const change = tokenData.balance - prevToken.balance;
               changes.push({
                 type: tokenSymbol,
-                previous: prevToken.balance,
-                current: tokenData.balance,
-                change: change,
+                previous: parseFloat(prevToken.balance).toFixed(8),
+                current: parseFloat(tokenData.balance).toFixed(8),
+                change: parseFloat(change).toFixed(8),
                 direction: change > 0 ? 'TĂNG' : 'GIẢM',
                 name: tokenData.name
               });
@@ -169,9 +169,9 @@ class TronBalanceMonitorWithTelegram {
             // Token mới xuất hiện
             changes.push({
               type: tokenSymbol,
-              previous: 0,
-              current: tokenData.balance,
-              change: tokenData.balance,
+              previous: '0.00000000',
+              current: parseFloat(tokenData.balance).toFixed(8),
+              change: parseFloat(tokenData.balance).toFixed(8),
               direction: 'MỚI',
               name: tokenData.name
             });
@@ -201,7 +201,7 @@ class TronBalanceMonitorWithTelegram {
       
       // Hiển thị kết quả
       console.log(`✅ Kiểm tra hoàn tất cho: ${address}`);
-      console.log(`💰 TRX: ${currentData.trxBalance} TRX`);
+      console.log(`💰 TRX: ${parseFloat(currentData.trxBalance).toFixed(8)} TRX`);
       
       if (Object.keys(currentData.tokens).length > 0) {
         console.log('🪙 Các token:');
@@ -217,11 +217,12 @@ class TronBalanceMonitorWithTelegram {
         console.log('\n📢 CÓ BIẾN ĐỘNG:');
         for (const change of changes) {
           if (change.direction === 'TĂNG' || change.direction === 'GIẢM') {
-            console.log(`   📈 ${change.type} ${change.direction}: ${change.previous} → ${change.current} (${change.change > 0 ? '+' : ''}${change.change})`);
+            const changeSign = parseFloat(change.change) > 0 ? '+' : '';
+            console.log(`   📈 ${change.type} ${change.direction}: ${change.previous} → ${change.current} (${changeSign}${change.change})`);
           } else if (change.direction === 'MỚI') {
             console.log(`   🆕 ${change.type} MỚI: ${change.current}`);
           } else if (change.direction === 'MẤT') {
-            console.log(`   ❌ ${change.type} MẤT: ${change.previous} → 0`);
+            console.log(`   ❌ ${change.type} MẤT: ${change.previous} → 0.00000000`);
           }
         }
         

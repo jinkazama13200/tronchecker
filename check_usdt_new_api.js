@@ -32,7 +32,7 @@ async function checkUSDTBalance() {
     
     // Hiển thị số dư TRX
     if (data.balance !== undefined) {
-      const trxBalance = (data.balance / 1000000).toFixed(6);
+      const trxBalance = (data.balance / 1000000).toFixed(8);
       console.log(`💰 Số dư TRX: ${trxBalance} TRX`);
     }
     
@@ -45,10 +45,10 @@ async function checkUSDTBalance() {
       for (const token of data.trc20token_balances) {
         // Kiểm tra nếu là USDT (Tether USD)
         if (token.tokenName === 'Tether USD' || token.tokenAbbr === 'USDT') {
-          console.log(`✅ USDT: ${token.balance} USDT (Token ID: ${token.tokenId})`);
+          console.log(`✅ USDT: ${parseFloat(token.balance).toFixed(8)} USDT (Token ID: ${token.tokenId})`);
           hasUSDT = true;
         } else {
-          console.log(`🟨 ${token.tokenName} (${token.tokenAbbr}): ${token.balance}`);
+          console.log(`🟨 ${token.tokenName} (${token.tokenAbbr}): ${parseFloat(token.balance).toFixed(8)}`);
         }
       }
       

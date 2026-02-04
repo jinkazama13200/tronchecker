@@ -1,0 +1,18 @@
+#!/bin/bash
+
+echo "=== HƯỚNG DẪN TẠO REPOSITORY TRONCHECKER TRÊN GITHUB ==="
+echo ""
+echo "1. Truy cập: https://github.com/new"
+echo "2. Điền thông tin:"
+echo "   - Repository name: tronchecker"
+echo "   - Visibility: Public"
+echo "   - KHÔNG chọn 'Initialize this repository with a README'"
+echo "   - Nhấp 'Create repository'"
+echo ""
+echo "3. Sau khi tạo xong, chạy lệnh sau để tiếp tục:"
+echo ""
+echo "cd /home/codespace/clawd/tron_checker"
+echo "git remote set-url origin https://github.com/mikey13200/tronchecker.git"
+echo "git push -u origin main"
+echo ""
+echo "Lưu ý: Thay 'mikey13200' bằng username GitHub của bạn nếu khác"

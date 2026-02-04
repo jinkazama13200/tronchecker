@@ -1,0 +1,304 @@
+require('dotenv').config();
+const axios = require('axios');
+const fs = require('fs').promises;
+const path = require('path');
+
+class TronBalanceMonitorWithTelegram {
+  constructor() {
+    this.apiKey = process.env.TRON_API_KEY || '938245e0-1ec6-486a-a4ea-6a1ff0e8170b';
+    this.telegramBotToken = process.env.TELEGRAM_BOT_TOKEN;
+    this.telegramChatId = process.env.TELEGRAM_CHAT_ID;
+    this.monitorFile = path.join(__dirname, 'monitor_state.json');
+  }
+
+  async sendTelegramNotification(message) {
+    if (!this.telegramBotToken || !this.telegramChatId) {
+      console.log('⚠️ Không có cấu hình Telegram, chỉ hiển thị trên terminal:');
+      console.log(message);
+      return;
+    }
+
+    try {
+      const url = `https://api.telegram.org/bot${this.telegramBotToken}/sendMessage`;
+      const response = await axios.post(url, {
+        chat_id: this.telegramChatId,
+        text: message,
+        parse_mode: 'Markdown'
+      }, {
+        timeout: 10000
+      });
+
+      console.log('✅ Thông báo Telegram đã gửi thành công');
+    } catch (error) {
+      console.error('❌ Lỗi khi gửi thông báo Telegram:', error.message);
+      // Fallback: hiển thị trên terminal
+      console.log('FALLBACK - Nội dung thông báo:');
+      console.log(message);
+    }
+  }
+
+  async getWalletData(address) {
+    try {
+      const url = `https://api.tronscan.org/api/account?address=${address}`;
+      
+      const response = await axios.get(url, {
+        headers: {
+          'TRON-PRO-API-KEY': this.apiKey,
+          'User-Agent': 'Mozilla/5.0 (compatible; TRONMonitor/1.0)'
+        },
+        timeout: 15000
+      });
+      
+      const data = response.data;
+      
+      if (data && data.code === 404) {
+        throw new Error('Địa chỉ ví không tồn tại');
+      }
+      
+      // Trích xuất số dư
+      const balanceData = {
+        address: address,
+        trxBalance: data.balance ? (data.balance / 1000000).toFixed(6) : 0,
+        tokens: {},
+        lastChecked: new Date().toISOString()
+      };
+      
+      // Trích xuất các token TRC20
+      if (data.trc20token_balances && data.trc20token_balances.length > 0) {
+        for (const token of data.trc20token_balances) {
+          balanceData.tokens[token.tokenAbbr] = {
+            name: token.tokenName,
+            balance: parseFloat(token.balance),
+            tokenId: token.tokenId
+          };
+        }
+      }
+      
+      return balanceData;
+    } catch (error) {
+      console.error('Lỗi khi lấy dữ liệu ví:', error.message);
+      throw error;
+    }
+  }
+
+  async loadMonitorState() {
+    try {
+      const data = await fs.readFile(this.monitorFile, 'utf8');
+      return JSON.parse(data);
+    } catch (error) {
+      // Nếu file không tồn tại, trả về trạng thái mặc định
+      return {};
+    }
+  }
+
+  async saveMonitorState(state) {
+    try {
+      await fs.writeFile(this.monitorFile, JSON.stringify(state, null, 2));
+    } catch (error) {
+      console.error('Lỗi khi lưu trạng thái theo dõi:', error.message);
+    }
+  }
+
+  formatNotification(changes, address) {
+    let message = `🚨 *BIẾN ĐỘNG SỐ DƯ ĐƯỢC PHÁT HIỆN*\n\n`;
+    message += `📍 *Địa chỉ ví:* \`${address}\`\n\n`;
+    
+    for (const change of changes) {
+      if (change.direction === 'TĂNG') {
+        message += `📈 *${change.type}* tăng: \`${change.previous} → ${change.current}\` (+${change.change})\n`;
+      } else if (change.direction === 'GIẢM') {
+        message += `📉 *${change.type}* giảm: \`${change.previous} → ${change.current}\` (${change.change})\n`;
+      } else if (change.direction === 'MỚI') {
+        message += `🆕 *${change.type}* mới: \`${change.current}\`\n`;
+      } else if (change.direction === 'MẤT') {
+        message += `❌ *${change.type}* mất: \`${change.previous} → 0\`\n`;
+      }
+    }
+    
+    message += `\n⏰ *Thời gian:* ${new Date().toLocaleString('vi-VN')}`;
+    
+    return message;
+  }
+
+  async checkForChanges(address) {
+    try {
+      console.log(`🔍 Đang kiểm tra số dư cho: ${address}`);
+      
+      // Lấy dữ liệu hiện tại
+      const currentData = await this.getWalletData(address);
+      
+      // Tải trạng thái trước đó
+      const prevState = await this.loadMonitorState();
+      const prevData = prevState[address];
+      
+      const changes = [];
+      
+      // So sánh số dư TRX
+      if (prevData) {
+        const prevTrxBalance = parseFloat(prevData.trxBalance);
+        const currentTrxBalance = parseFloat(currentData.trxBalance);
+        
+        if (prevTrxBalance !== currentTrxBalance) {
+          const change = currentTrxBalance - prevTrxBalance;
+          changes.push({
+            type: 'TRX',
+            previous: prevTrxBalance,
+            current: currentTrxBalance,
+            change: change,
+            direction: change > 0 ? 'TĂNG' : 'GIẢM'
+          });
+        }
+        
+        // So sánh các token
+        for (const [tokenSymbol, tokenData] of Object.entries(currentData.tokens)) {
+          const prevToken = prevData.tokens && prevData.tokens[tokenSymbol];
+          
+          if (prevToken) {
+            if (prevToken.balance !== tokenData.balance) {
+              const change = tokenData.balance - prevToken.balance;
+              changes.push({
+                type: tokenSymbol,
+                previous: prevToken.balance,
+                current: tokenData.balance,
+                change: change,
+                direction: change > 0 ? 'TĂNG' : 'GIẢM',
+                name: tokenData.name
+              });
+            }
+          } else {
+            // Token mới xuất hiện
+            changes.push({
+              type: tokenSymbol,
+              previous: 0,
+              current: tokenData.balance,
+              change: tokenData.balance,
+              direction: 'MỚI',
+              name: tokenData.name
+            });
+          }
+        }
+        
+        // Kiểm tra token bị mất
+        if (prevData.tokens) {
+          for (const [tokenSymbol, tokenData] of Object.entries(prevData.tokens)) {
+            if (!currentData.tokens[tokenSymbol]) {
+              changes.push({
+                type: tokenSymbol,
+                previous: tokenData.balance,
+                current: 0,
+                change: -tokenData.balance,
+                direction: 'MẤT',
+                name: tokenData.name
+              });
+            }
+          }
+        }
+      }
+      
+      // Cập nhật trạng thái mới
+      prevState[address] = currentData;
+      await this.saveMonitorState(prevState);
+      
+      // Hiển thị kết quả
+      console.log(`✅ Kiểm tra hoàn tất cho: ${address}`);
+      console.log(`💰 TRX: ${currentData.trxBalance} TRX`);
+      
+      if (Object.keys(currentData.tokens).length > 0) {
+        console.log('🪙 Các token:');
+        for (const [symbol, token] of Object.entries(currentData.tokens)) {
+          console.log(`   - ${symbol} (${token.name}): ${token.balance}`);
+        }
+      } else {
+        console.log('   Không có token TRC20 nào');
+      }
+      
+      // Hiển thị và gửi thông báo nếu có thay đổi
+      if (changes.length > 0) {
+        console.log('\n📢 CÓ BIẾN ĐỘNG:');
+        for (const change of changes) {
+          if (change.direction === 'TĂNG' || change.direction === 'GIẢM') {
+            console.log(`   📈 ${change.type} ${change.direction}: ${change.previous} → ${change.current} (${change.change > 0 ? '+' : ''}${change.change})`);
+          } else if (change.direction === 'MỚI') {
+            console.log(`   🆕 ${change.type} MỚI: ${change.current}`);
+          } else if (change.direction === 'MẤT') {
+            console.log(`   ❌ ${change.type} MẤT: ${change.previous} → 0`);
+          }
+        }
+        
+        // Gửi thông báo Telegram
+        const notificationMessage = this.formatNotification(changes, address);
+        await this.sendTelegramNotification(notificationMessage);
+      } else {
+        console.log('\n✅ Không có biến động số dư');
+      }
+      
+      console.log('');
+      
+      return changes;
+    } catch (error) {
+      console.error('❌ Lỗi khi kiểm tra biến động:', error.message);
+      
+      // Gửi thông báo lỗi qua Telegram nếu có
+      const errorMessage = `🚨 *LỖI KIỂM TRA BIẾN ĐỘNG*\n\n` +
+        `📍 *Địa chỉ ví:* \`${address}\`\n` +
+        `❌ *Lỗi:* ${error.message}\n` +
+        `⏰ *Thời gian:* ${new Date().toLocaleString('vi-VN')}`;
+      
+      await this.sendTelegramNotification(errorMessage);
+      return [];
+    }
+  }
+
+  async startMonitoring(address, intervalMinutes = 5) {
+    console.log(`🚀 Bắt đầu theo dõi biến động cho: ${address}`);
+    console.log(`⏱️  Интервал: ${intervalMinutes} phút`);
+    console.log('Ấn Ctrl+C để dừng theo dõi\n');
+    
+    // Kiểm tra ngay lập tức
+    await this.checkForChanges(address);
+    
+    // Sau đó kiểm tra định kỳ
+    const interval = setInterval(async () => {
+      await this.checkForChanges(address);
+    }, intervalMinutes * 60 * 1000);
+    
+    // Dừng khi nhận tín hiệu SIGINT (Ctrl+C)
+    process.on('SIGINT', () => {
+      console.log('\n🛑 Dừng theo dõi...');
+      clearInterval(interval);
+      process.exit(0);
+    });
+  }
+}
+
+// Main execution
+async function main() {
+  const monitor = new TronBalanceMonitorWithTelegram();
+  
+  // Lấy địa chỉ từ tham số dòng lệnh hoặc sử dụng mặc định
+  const address = process.argv[2] || 'TQtRKmheCo6tSe725NtywzHiXqqs3LMdxU';
+  const interval = parseInt(process.argv[3]) || 5; // Mặc định 5 phút
+  
+  if (process.argv.includes('--once') || process.argv.includes('-o')) {
+    // Chỉ kiểm tra một lần
+    await monitor.checkForChanges(address);
+  } else if (process.argv.includes('--monitor') || process.argv.includes('-m')) {
+    // Chế độ theo dõi liên tục
+    await monitor.startMonitoring(address, interval);
+  } else {
+    // Kiểm tra một lần và hiển thị cách sử dụng
+    await monitor.checkForChanges(address);
+    console.log('💡 Gợi ý:');
+    console.log('   --once, -o: Kiểm tra một lần');
+    console.log('   --monitor, -m: Theo dõi liên tục');
+    console.log('   Thêm số phút để đặt интервал (mặc định 5): node monitor-telegram.js [địa chỉ] [phút] --monitor');
+    console.log('');
+    console.log('🔐 Để nhận thông báo Telegram:');
+    console.log('   1. Thêm BOT_TOKEN và CHAT_ID vào file .env');
+    console.log('   2. BOT_TOKEN: Token từ @BotFather');
+    console.log('   3. CHAT_ID: ID cuộc trò chuyện Telegram của bạn');
+  }
+}
+
+// Chạy chương trình
+main().catch(console.error);

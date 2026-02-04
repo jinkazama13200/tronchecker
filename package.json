@@ -1,0 +1,26 @@
+{
+  "name": "tron-checker",
+  "version": "1.0.0",
+  "description": "A tool to check TRON wallet balances and transactions",
+  "main": "check_usdt_new_api.js",
+  "scripts": {
+    "start": "node check_usdt_new_api.js",
+    "monitor": "node monitor.js",
+    "monitor-telegram": "node monitor-telegram.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "tron",
+    "usdt",
+    "blockchain",
+    "balance",
+    "checker",
+    "monitor"
+  ],
+  "author": "Mike",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.6.0",
+    "dotenv": "^17.2.3"
+  }
+}

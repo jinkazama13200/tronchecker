@@ -218,7 +218,7 @@ class SimpleMonitor {
       const errorMessage = `🚨 *LỖI KIỂM TRA BIẾN ĐỘNG*\n\n` +
         `📍 *Địa chỉ ví:* \`${address}\`\n` +
         `❌ *Lỗi:* ${error.message}\n` +
-        `⏰ *Thời gian:* ${new Date().toLocaleString('vi-VN')}`;
+        `⏰ *Thời gian:* ${new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}`;
       
       await this.sendTelegramNotification(errorMessage);
       return [];
@@ -245,7 +245,7 @@ class SimpleMonitor {
       }
     }
     
-    message += `⏰ *Thời gian:* ${new Date().toLocaleString('vi-VN')}`;
+    message += `⏰ *Thời gian:* ${new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}`;
     
     await this.sendTelegramNotification(message);
   }

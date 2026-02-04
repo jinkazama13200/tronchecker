@@ -114,7 +114,7 @@ class TronBalanceMonitor {
               sentTo: null,
               transactionId: latestTransfer.transaction_id,
               amount: latestTransfer.amount,
-              timestamp: new Date(latestTransfer.block_ts).toLocaleString('vi-VN')
+              timestamp: new Date(latestTransfer.block_ts).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })
             };
           } else if (latestTransfer.from === address.toLowerCase()) {
             // Đây là giao dịch gửi
@@ -123,7 +123,7 @@ class TronBalanceMonitor {
               sentTo: latestTransfer.to,
               transactionId: latestTransfer.transaction_id,
               amount: latestTransfer.amount,
-              timestamp: new Date(latestTransfer.block_ts).toLocaleString('vi-VN')
+              timestamp: new Date(latestTransfer.block_ts).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })
             };
           }
         }

@@ -99,7 +99,7 @@ async function checkUSDTBalance() {
           const truncatedWhole = wholePartStr.length > 5 ? wholePartStr.substring(0, 5) : wholePartStr;
           const formattedAmount = truncatedWhole + '.00000000';
           
-          console.log(`${direction} ${formattedAmount} USDT vào ${new Date(transfer.block_ts).toLocaleString()}`);
+          console.log(`${direction} ${formattedAmount} USDT vào ${new Date(transfer.block_ts).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}`);
           usdtTransfers++;
         }
       }

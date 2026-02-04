@@ -142,7 +142,7 @@ class TronBalanceMonitorWithTelegram {
               sentTo: null,
               transactionId: latestTransfer.transaction_id,
               amount: latestTransfer.amount,
-              timestamp: new Date(latestTransfer.block_ts).toLocaleString('vi-VN')
+              timestamp: new Date(latestTransfer.block_ts).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })
             };
           } else if (latestTransfer.from === address.toLowerCase()) {
             // Đây là giao dịch gửi
@@ -151,7 +151,7 @@ class TronBalanceMonitorWithTelegram {
               sentTo: latestTransfer.to,
               transactionId: latestTransfer.transaction_id,
               amount: latestTransfer.amount,
-              timestamp: new Date(latestTransfer.block_ts).toLocaleString('vi-VN')
+              timestamp: new Date(latestTransfer.block_ts).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })
             };
           }
         }
@@ -206,7 +206,7 @@ class TronBalanceMonitorWithTelegram {
       }
     }
     
-    message += `⏰ *Thời gian:* ${new Date().toLocaleString('vi-VN')}`;
+    message += `⏰ *Thời gian:* ${new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}`;
     
     return message;
   }
@@ -369,7 +369,7 @@ class TronBalanceMonitorWithTelegram {
       const errorMessage = `🚨 *LỖI KIỂM TRA BIẾN ĐỘNG*\n\n` +
         `📍 *Địa chỉ ví:* \`${address}\`\n` +
         `❌ *Lỗi:* ${error.message}\n` +
-        `⏰ *Thời gian:* ${new Date().toLocaleString('vi-VN')}`;
+        `⏰ *Thời gian:* ${new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}`;
       
       await this.sendTelegramNotification(errorMessage);
       return [];

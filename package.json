@@ -7,6 +7,7 @@
     "start": "node check_usdt_new_api.js",
     "monitor": "node monitor.js",
     "monitor-telegram": "node monitor-telegram.js",
+    "simple-check": "node simple_check.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [

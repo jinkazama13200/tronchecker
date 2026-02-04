@@ -99,6 +99,58 @@ class TronBalanceMonitorWithTelegram {
     }
   }
 
+  async getRelatedAddresses(address, tokenSymbol) {
+    try {
+      // Lấy lịch sử giao dịch gần đây cho token cụ thể
+      const historyUrl = `https://api.tronscan.org/api/transfer/trc20?relatedAddress=${address}&limit=10&start=0&sort=-timestamp`;
+      const historyResponse = await axios.get(historyUrl, {
+        headers: {
+          'TRON-PRO-API-KEY': this.apiKey,
+          'User-Agent': 'Mozilla/5.0 (compatible; TRONMonitor/1.0)'
+        },
+        timeout: 10000
+      });
+
+      const historyData = historyResponse.data;
+
+      if (historyData && historyData.transfers) {
+        // Lọc các giao dịch cho token cụ thể
+        const tokenTransfers = historyData.transfers.filter(transfer => 
+          transfer.tokenAbbr === tokenSymbol || transfer.tokenName.includes('Tether USD')
+        );
+
+        if (tokenTransfers.length > 0) {
+          const latestTransfer = tokenTransfers[0]; // Giao dịch gần nhất
+          
+          if (latestTransfer.to === address.toLowerCase()) {
+            // Đây là giao dịch nhận
+            return {
+              receivedFrom: latestTransfer.from,
+              sentTo: null,
+              transactionId: latestTransfer.transaction_id,
+              amount: latestTransfer.amount,
+              timestamp: new Date(latestTransfer.block_ts).toLocaleString('vi-VN')
+            };
+          } else if (latestTransfer.from === address.toLowerCase()) {
+            // Đây là giao dịch gửi
+            return {
+              receivedFrom: null,
+              sentTo: latestTransfer.to,
+              transactionId: latestTransfer.transaction_id,
+              amount: latestTransfer.amount,
+              timestamp: new Date(latestTransfer.block_ts).toLocaleString('vi-VN')
+            };
+          }
+        }
+      }
+
+      return { receivedFrom: null, sentTo: null };
+    } catch (error) {
+      console.error('Lỗi khi lấy thông tin giao dịch liên quan:', error.message);
+      return { receivedFrom: null, sentTo: null };
+    }
+  }
+
   formatNotification(changes, address) {
     let message = `🚨 *BIẾN ĐỘNG SỐ DƯ ĐƯỢC PHÁT HIỆN*\n\n`;
     message += `📍 *Địa chỉ ví:* \`${address}\`\n\n`;
@@ -106,8 +158,18 @@ class TronBalanceMonitorWithTelegram {
     for (const change of changes) {
       if (change.direction === 'TĂNG') {
         message += `📈 *${change.type}* tăng: \`${change.previous} → ${change.current}\` (+${change.change})\n`;
+        if (change.relatedAddresses && change.relatedAddresses.receivedFrom) {
+          message += `📥 *Từ:* \`${change.relatedAddresses.receivedFrom.substring(0, 10)}...\`\n`;
+          message += `🕒 *Thời gian:* ${change.relatedAddresses.timestamp}\n`;
+          message += `🔗 *Giao dịch:* \`${change.relatedAddresses.transactionId.substring(0, 12)}...\`\n`;
+        }
       } else if (change.direction === 'GIẢM') {
         message += `📉 *${change.type}* giảm: \`${change.previous} → ${change.current}\` (${change.change})\n`;
+        if (change.relatedAddresses && change.relatedAddresses.sentTo) {
+          message += `📤 *Tới:* \`${change.relatedAddresses.sentTo.substring(0, 10)}...\`\n`;
+          message += `🕒 *Thời gian:* ${change.relatedAddresses.timestamp}\n`;
+          message += `🔗 *Giao dịch:* \`${change.relatedAddresses.transactionId.substring(0, 12)}...\`\n`;
+        }
       } else if (change.direction === 'MỚI') {
         message += `🆕 *${change.type}* mới: \`${change.current}\`\n`;
       } else if (change.direction === 'MẤT') {
@@ -154,15 +216,20 @@ class TronBalanceMonitorWithTelegram {
           const prevToken = prevData.tokens && prevData.tokens[tokenSymbol];
           
           if (prevToken) {
-            if (prevToken.balance !== tokenData.balance) {
-              const change = tokenData.balance - prevToken.balance;
+            if (parseFloat(prevToken.balance) !== parseFloat(tokenData.balance)) {
+              const change = parseFloat(tokenData.balance) - parseFloat(prevToken.balance);
+              
+              // Lấy thông tin giao dịch gần đây để xác định địa chỉ liên quan
+              const relatedAddresses = await this.getRelatedAddresses(address, tokenSymbol);
+              
               changes.push({
                 type: tokenSymbol,
                 previous: parseFloat(prevToken.balance).toFixed(8),
                 current: parseFloat(tokenData.balance).toFixed(8),
                 change: parseFloat(change).toFixed(8),
                 direction: change > 0 ? 'TĂNG' : 'GIẢM',
-                name: tokenData.name
+                name: tokenData.name,
+                relatedAddresses: relatedAddresses
               });
             }
           } else {
@@ -173,7 +240,8 @@ class TronBalanceMonitorWithTelegram {
               current: parseFloat(tokenData.balance).toFixed(8),
               change: parseFloat(tokenData.balance).toFixed(8),
               direction: 'MỚI',
-              name: tokenData.name
+              name: tokenData.name,
+              relatedAddresses: { receivedFrom: null, sentTo: null }
             });
           }
         }

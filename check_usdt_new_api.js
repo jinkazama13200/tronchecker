@@ -45,11 +45,14 @@ async function checkUSDTBalance() {
       for (const token of data.trc20token_balances) {
         // Kiểm tra nếu là USDT (Tether USD)
         if (token.tokenName === 'Tether USD' || token.tokenAbbr === 'USDT') {
-          // Định dạng lại số lượng USDT chỉ với 5 chữ số phần nguyên
-          const wholePart = Math.floor(parseFloat(token.balance));
-          const decimalPart = parseFloat(token.balance) - wholePart;
-          const truncatedWhole = Math.min(wholePart, 99999);
-          const formattedBalance = (truncatedWhole + decimalPart).toFixed(8);
+          // Định dạng lại số lượng USDT chỉ với 5 chữ số đầu tiên
+          const strValue = token.balance.toString();
+          const dotIndex = strValue.indexOf('.');
+          const wholePartStr = dotIndex > 0 ? strValue.substring(0, dotIndex) : strValue;
+          
+          // Lấy 5 chữ số đầu tiên của phần nguyên
+          const truncatedWhole = wholePartStr.length > 5 ? wholePartStr.substring(0, 5) : wholePartStr;
+          const formattedBalance = truncatedWhole + '.00000000';
           
           console.log(`✅ USDT: ${formattedBalance} USDT (Token ID: ${token.tokenId})`);
           hasUSDT = true;
@@ -87,11 +90,14 @@ async function checkUSDTBalance() {
         if (transfer.tokenName === 'Tether USD' || transfer.tokenAbbr === 'USDT') {
           const direction = transfer.to === address.toLowerCase() ? '📥 Nhận' : '📤 Gửi';
           
-          // Định dạng lại số lượng USDT chỉ với 5 chữ số phần nguyên
-          const wholePart = Math.floor(parseFloat(transfer.amount));
-          const decimalPart = parseFloat(transfer.amount) - wholePart;
-          const truncatedWhole = Math.min(wholePart, 99999);
-          const formattedAmount = (truncatedWhole + decimalPart).toFixed(8);
+          // Định dạng lại số lượng USDT chỉ với 5 chữ số đầu tiên
+          const strValue = transfer.amount.toString();
+          const dotIndex = strValue.indexOf('.');
+          const wholePartStr = dotIndex > 0 ? strValue.substring(0, dotIndex) : strValue;
+          
+          // Lấy 5 chữ số đầu tiên của phần nguyên
+          const truncatedWhole = wholePartStr.length > 5 ? wholePartStr.substring(0, 5) : wholePartStr;
+          const formattedAmount = truncatedWhole + '.00000000';
           
           console.log(`${direction} ${formattedAmount} USDT vào ${new Date(transfer.block_ts).toLocaleString()}`);
           usdtTransfers++;

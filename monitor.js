@@ -40,14 +40,15 @@ class TronBalanceMonitor {
         for (const token of data.trc20token_balances) {
           let formattedBalance = parseFloat(token.balance).toFixed(8);
           
-          // Nếu là USDT, định dạng lại chỉ với 5 chữ số phần nguyên
+          // Nếu là USDT, định dạng lại chỉ với 5 chữ số đầu tiên
           if (token.tokenAbbr === 'USDT' || token.tokenName.includes('Tether USD')) {
-            const wholePart = Math.floor(parseFloat(token.balance));
-            const decimalPart = parseFloat(token.balance) - wholePart;
+            const strValue = token.balance.toString();
+            const dotIndex = strValue.indexOf('.');
+            const wholePartStr = dotIndex > 0 ? strValue.substring(0, dotIndex) : strValue;
             
-            // Giới hạn phần nguyên chỉ còn 5 chữ số (chục nghìn)
-            const truncatedWhole = Math.min(wholePart, 99999);
-            formattedBalance = (truncatedWhole + decimalPart).toFixed(8);
+            // Lấy 5 chữ số đầu tiên của phần nguyên
+            const truncatedWhole = wholePartStr.length > 5 ? wholePartStr.substring(0, 5) : wholePartStr;
+            formattedBalance = truncatedWhole + '.00000000';
           }
           
           balanceData.tokens[token.tokenAbbr] = {
@@ -170,16 +171,45 @@ class TronBalanceMonitor {
           
           if (prevToken) {
             if (parseFloat(prevToken.balance) !== parseFloat(tokenData.balance)) {
-              const change = parseFloat(tokenData.balance) - parseFloat(prevToken.balance);
+              const prevValue = parseFloat(prevToken.balance);
+              const currValue = parseFloat(tokenData.balance);
+              const change = currValue - prevValue;
+              
+              // Định dạng lại giá trị nếu là USDT
+              let formattedPrevious = parseFloat(prevToken.balance).toFixed(8);
+              let formattedCurrent = parseFloat(tokenData.balance).toFixed(8);
+              let formattedChange = parseFloat(change).toFixed(8);
+              
+              if (tokenSymbol === 'USDT' || tokenData.name.includes('Tether USD')) {
+                // Định dạng lại chỉ với 5 chữ số đầu tiên
+                const prevStr = prevToken.balance.toString();
+                const prevDotIndex = prevStr.indexOf('.');
+                const prevWholePartStr = prevDotIndex > 0 ? prevStr.substring(0, prevDotIndex) : prevStr;
+                const prevTruncated = prevWholePartStr.length > 5 ? prevWholePartStr.substring(0, 5) : prevWholePartStr;
+                
+                const currStr = tokenData.balance.toString();
+                const currDotIndex = currStr.indexOf('.');
+                const currWholePartStr = currDotIndex > 0 ? currStr.substring(0, currDotIndex) : currStr;
+                const currTruncated = currWholePartStr.length > 5 ? currWholePartStr.substring(0, 5) : currWholePartStr;
+                
+                const changeStr = change.toString();
+                const changeDotIndex = changeStr.indexOf('.');
+                const changeWholePartStr = changeDotIndex > 0 ? changeStr.substring(0, changeDotIndex) : changeStr;
+                const changeTruncated = changeWholePartStr.length > 5 ? changeWholePartStr.substring(0, 5) : changeWholePartStr;
+                
+                formattedPrevious = prevTruncated + '.00000000';
+                formattedCurrent = currTruncated + '.00000000';
+                formattedChange = changeTruncated + '.00000000';
+              }
               
               // Lấy thông tin giao dịch gần đây để xác định địa chỉ liên quan
               const relatedAddresses = await this.getRelatedAddresses(address, tokenSymbol);
               
               changes.push({
                 type: tokenSymbol,
-                previous: parseFloat(prevToken.balance).toFixed(8),
-                current: parseFloat(tokenData.balance).toFixed(8),
-                change: parseFloat(change).toFixed(8),
+                previous: formattedPrevious,
+                current: formattedCurrent,
+                change: formattedChange,
                 direction: change > 0 ? 'TĂNG' : 'GIẢM',
                 name: tokenData.name,
                 relatedAddresses: relatedAddresses

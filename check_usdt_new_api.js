@@ -45,7 +45,13 @@ async function checkUSDTBalance() {
       for (const token of data.trc20token_balances) {
         // Kiểm tra nếu là USDT (Tether USD)
         if (token.tokenName === 'Tether USD' || token.tokenAbbr === 'USDT') {
-          console.log(`✅ USDT: ${parseFloat(token.balance).toFixed(8)} USDT (Token ID: ${token.tokenId})`);
+          // Định dạng lại số lượng USDT chỉ với 5 chữ số phần nguyên
+          const wholePart = Math.floor(parseFloat(token.balance));
+          const decimalPart = parseFloat(token.balance) - wholePart;
+          const truncatedWhole = Math.min(wholePart, 99999);
+          const formattedBalance = (truncatedWhole + decimalPart).toFixed(8);
+          
+          console.log(`✅ USDT: ${formattedBalance} USDT (Token ID: ${token.tokenId})`);
           hasUSDT = true;
         } else {
           console.log(`🟨 ${token.tokenName} (${token.tokenAbbr}): ${parseFloat(token.balance).toFixed(8)}`);
@@ -80,7 +86,14 @@ async function checkUSDTBalance() {
       for (const transfer of historyData.transfers) {
         if (transfer.tokenName === 'Tether USD' || transfer.tokenAbbr === 'USDT') {
           const direction = transfer.to === address.toLowerCase() ? '📥 Nhận' : '📤 Gửi';
-          console.log(`${direction} ${transfer.amount} USDT vào ${new Date(transfer.block_ts).toLocaleString()}`);
+          
+          // Định dạng lại số lượng USDT chỉ với 5 chữ số phần nguyên
+          const wholePart = Math.floor(parseFloat(transfer.amount));
+          const decimalPart = parseFloat(transfer.amount) - wholePart;
+          const truncatedWhole = Math.min(wholePart, 99999);
+          const formattedAmount = (truncatedWhole + decimalPart).toFixed(8);
+          
+          console.log(`${direction} ${formattedAmount} USDT vào ${new Date(transfer.block_ts).toLocaleString()}`);
           usdtTransfers++;
         }
       }

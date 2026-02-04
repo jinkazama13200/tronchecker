@@ -38,9 +38,21 @@ class TronBalanceMonitor {
       // Trích xuất các token TRC20
       if (data.trc20token_balances && data.trc20token_balances.length > 0) {
         for (const token of data.trc20token_balances) {
+          let formattedBalance = parseFloat(token.balance).toFixed(8);
+          
+          // Nếu là USDT, định dạng lại chỉ với 5 chữ số phần nguyên
+          if (token.tokenAbbr === 'USDT' || token.tokenName.includes('Tether USD')) {
+            const wholePart = Math.floor(parseFloat(token.balance));
+            const decimalPart = parseFloat(token.balance) - wholePart;
+            
+            // Giới hạn phần nguyên chỉ còn 5 chữ số (chục nghìn)
+            const truncatedWhole = Math.min(wholePart, 99999);
+            formattedBalance = (truncatedWhole + decimalPart).toFixed(8);
+          }
+          
           balanceData.tokens[token.tokenAbbr] = {
             name: token.tokenName,
-            balance: parseFloat(token.balance).toFixed(8),
+            balance: formattedBalance,
             tokenId: token.tokenId
           };
         }

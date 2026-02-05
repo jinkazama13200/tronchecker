@@ -70,17 +70,6 @@ class SuperFastMonitor {
         for (const token of data.trc20token_balances) {
           let formattedBalance = parseFloat(token.balance).toFixed(8);
           
-          // Nếu là USDT, định dạng lại chỉ với 5 chữ số đầu tiên
-          if (token.tokenAbbr === 'USDT' || token.tokenName.includes('Tether USD')) {
-            const strValue = token.balance.toString();
-            const dotIndex = strValue.indexOf('.');
-            const wholePartStr = dotIndex > 0 ? strValue.substring(0, dotIndex) : strValue;
-            
-            // Lấy 5 chữ số đầu tiên của phần nguyên
-            const truncatedWhole = wholePartStr.length > 5 ? wholePartStr.substring(0, 5) : wholePartStr;
-            formattedBalance = truncatedWhole + '.00000000';
-          }
-          
           balanceData.tokens[token.tokenAbbr] = {
             name: token.tokenName,
             balance: formattedBalance,

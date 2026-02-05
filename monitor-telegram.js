@@ -68,17 +68,6 @@ class TronBalanceMonitorWithTelegram {
         for (const token of data.trc20token_balances) {
           let formattedBalance = parseFloat(token.balance).toFixed(8);
           
-          // Nếu là USDT, định dạng lại chỉ với 5 chữ số đầu tiên
-          if (token.tokenAbbr === 'USDT' || token.tokenName.includes('Tether USD')) {
-            const strValue = token.balance.toString();
-            const dotIndex = strValue.indexOf('.');
-            const wholePartStr = dotIndex > 0 ? strValue.substring(0, dotIndex) : strValue;
-            
-            // Lấy 5 chữ số đầu tiên của phần nguyên
-            const truncatedWhole = wholePartStr.length > 5 ? wholePartStr.substring(0, 5) : wholePartStr;
-            formattedBalance = truncatedWhole + '.00000000';
-          }
-          
           balanceData.tokens[token.tokenAbbr] = {
             name: token.tokenName,
             balance: formattedBalance,
@@ -173,15 +162,15 @@ class TronBalanceMonitorWithTelegram {
         message += `💰 *Số dư hiện tại:* ${change.current}\n`;
         message += `📊 *Số dư biến động:* +${change.change}\n`;
         message += `📥 *Địa chỉ nhận:* \`${address}\`\n`;
-        message += `📤 *Địa chỉ chuyển:* \`${change.relatedAddresses?.receivedFrom?.substring(0, 12) || 'N/A'}...\`\n`;
-        message += `⏰ *Thời gian:* ${change.relatedAddresses?.timestamp || new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}\n\n`;
+        message += `📤 *Địa chỉ chuyển:* \`N/A\`\n`;
+        message += `⏰ *Thời gian:* ${new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}\n\n`;
       } else if (change.direction === 'GIẢM') {
         message += `🔴 *Số dư bị giảm*\n`;
         message += `💰 *Số dư hiện tại:* ${change.current}\n`;
         message += `📊 *Số dư biến động:* -${change.change}\n`;
-        message += `📤 *Địa chỉ nhận:* \`${change.relatedAddresses?.sentTo?.substring(0, 12) || 'N/A'}...\`\n`;
-        message += `📥 *Địa chỉ chuyển:* \`${address}\`\n`;
-        message += `⏰ *Thời gian:* ${change.relatedAddresses?.timestamp || new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}\n\n`;
+        message += `📥 *Địa chỉ nhận:* \`N/A\`\n`;
+        message += `📤 *Địa chỉ chuyển:* \`${address}\`\n`;
+        message += `⏰ *Thời gian:* ${new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}\n\n`;
       } else if (change.direction === 'MỚI') {
         message += `🟢 *Số dư được cộng*\n`;
         message += `🆕 *Loại token:* ${change.type}\n`;
@@ -250,25 +239,11 @@ class TronBalanceMonitorWithTelegram {
               let formattedChange = Math.abs(change).toFixed(8); // Luôn lấy giá trị tuyệt đối để hiển thị
               
               if (tokenSymbol === 'USDT' || tokenData.name.includes('Tether USD')) {
-                // Định dạng lại chỉ với 5 chữ số đầu tiên
-                const prevStr = prevToken.balance.toString();
-                const prevDotIndex = prevStr.indexOf('.');
-                const prevWholePartStr = prevDotIndex > 0 ? prevStr.substring(0, prevDotIndex) : prevStr;
-                const prevTruncated = prevWholePartStr.length > 5 ? prevWholePartStr.substring(0, 5) : prevWholePartStr;
-                
-                const currStr = tokenData.balance.toString();
-                const currDotIndex = currStr.indexOf('.');
-                const currWholePartStr = currDotIndex > 0 ? currStr.substring(0, currDotIndex) : currStr;
-                const currTruncated = currWholePartStr.length > 5 ? currWholePartStr.substring(0, 5) : currWholePartStr;
-                
-                const changeStr = Math.abs(change).toString(); // Luôn dùng giá trị tuyệt đối
-                const changeDotIndex = changeStr.indexOf('.');
-                const changeWholePartStr = changeDotIndex > 0 ? changeStr.substring(0, changeDotIndex) : changeStr;
-                const changeTruncated = changeWholePartStr.length > 5 ? changeWholePartStr.substring(0, 5) : changeWholePartStr;
-                
-                formattedPrevious = prevTruncated + '.00000000';
-                formattedCurrent = currTruncated + '.00000000';
-                formattedChange = changeTruncated + '.00000000';
+                // Không thay đổi giá trị gốc, chỉ định dạng để hiển thị gọn hơn
+                // Giữ nguyên giá trị thật để tính toán chính xác
+                formattedPrevious = parseFloat(prevToken.balance).toFixed(8);
+                formattedCurrent = parseFloat(tokenData.balance).toFixed(8);
+                formattedChange = Math.abs(change).toFixed(8);
               }
               
               // Lấy thông tin giao dịch gần đây để xác định địa chỉ liên quan

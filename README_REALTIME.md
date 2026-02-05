@@ -13,7 +13,7 @@ Có 2 phiên bản:
 - 📱 **Thông báo Telegram** - khi có biến động USDT
 - 📍 **Hiển thị địa chỉ gửi đến** - khi số dư tăng
 - 📤 **Hiển thị địa chỉ gửi đi** - khi số dư giảm
-- 🔢 **Định dạng số nguyên bản** - hiển thị đúng con số nhận được (1, 1000, 1000000)
+- 🔢 **Định dạng số gọn gàng** - không có số 0 không cần thiết, có đơn vị USDT (1 USDT, 1000 USDT, 1000000 USDT)
 - 🔁 **Tự động khởi động lại** - nếu có lỗi
 - 📊 **Hiển thị đầy đủ thông tin** - số dư, biến động, thời gian, địa chỉ liên quan
 

@@ -90,13 +90,13 @@ class RealTimeMonitor {
   async getRelatedAddresses(address, tokenSymbol) {
     try {
       // Lấy lịch sử giao dịch gần đây cho token cụ thể
-      const historyUrl = `https://api.tronscan.org/api/transfer/trc20?relatedAddress=${address}&limit=20&start=0&sort=-timestamp`;
+      const historyUrl = `https://api.tronscan.org/api/transfer/trc20?relatedAddress=${address}&limit=30&start=0&sort=-timestamp`;
       const historyResponse = await axios.get(historyUrl, {
         headers: {
           'TRON-PRO-API-KEY': this.apiKey,
           'User-Agent': 'Mozilla/5.0 (compatible; RealTimeMonitor/1.0)'
         },
-        timeout: 5000
+        timeout: 8000  // Tăng thời gian chờ để đảm bảo nhận được dữ liệu
       });
 
       const historyData = historyResponse.data;
@@ -110,7 +110,7 @@ class RealTimeMonitor {
         if (tokenTransfers.length > 0) {
           // Tìm giao dịch gần nhất phù hợp với thời điểm thay đổi số dư
           const now = Date.now();
-          const fourHoursAgo = now - (4 * 60 * 60 * 1000); // 4 tiếng trước để mở rộng phạm vi tìm kiếm
+          const sixHoursAgo = now - (6 * 60 * 60 * 1000); // Mở rộng phạm vi tìm kiếm lên 6 tiếng
           
           for (const transfer of tokenTransfers) {
             // Chuyển địa chỉ về dạng lowercase để so sánh chính xác
@@ -121,11 +121,11 @@ class RealTimeMonitor {
             const transferTime = transfer.block_ts;
             
             // Kiểm tra xem giao dịch có trong khoảng thời gian gần đây không
-            if (transferTime >= fourHoursAgo) {
+            if (transferTime >= sixHoursAgo) {
               if (transferTo === addressLower) {
                 // Đây là giao dịch nhận
                 return {
-                  receivedFrom: transferFrom,
+                  receivedFrom: transfer.from,  // Trả về địa chỉ đầy đủ (không chuyển thành lowercase)
                   sentTo: null,
                   transactionId: transfer.transaction_id,
                   amount: transfer.amount,
@@ -135,7 +135,7 @@ class RealTimeMonitor {
                 // Đây là giao dịch gửi
                 return {
                   receivedFrom: null,
-                  sentTo: transferTo,
+                  sentTo: transfer.to,  // Trả về địa chỉ đầy đủ (không chuyển thành lowercase)
                   transactionId: transfer.transaction_id,
                   amount: transfer.amount,
                   timestamp: new Date(transfer.block_ts).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })
@@ -144,7 +144,7 @@ class RealTimeMonitor {
             }
           }
           
-          // Nếu không tìm thấy trong 4 tiếng gần nhất, chọn giao dịch gần nhất
+          // Nếu không tìm thấy trong 6 tiếng gần nhất, chọn giao dịch gần nhất
           const latestTransfer = tokenTransfers[0];
           if (latestTransfer) {
             const transferTo = latestTransfer.to ? latestTransfer.to.toLowerCase() : '';
@@ -154,7 +154,7 @@ class RealTimeMonitor {
             if (transferTo === addressLower) {
               // Đây là giao dịch nhận
               return {
-                receivedFrom: transferFrom,
+                receivedFrom: latestTransfer.from,  // Trả về địa chỉ đầy đủ
                 sentTo: null,
                 transactionId: latestTransfer.transaction_id,
                 amount: latestTransfer.amount,
@@ -164,7 +164,7 @@ class RealTimeMonitor {
               // Đây là giao dịch gửi
               return {
                 receivedFrom: null,
-                sentTo: transferTo,
+                sentTo: latestTransfer.to,  // Trả về địa chỉ đầy đủ
                 transactionId: latestTransfer.transaction_id,
                 amount: latestTransfer.amount,
                 timestamp: new Date(latestTransfer.block_ts).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })
@@ -232,13 +232,13 @@ class RealTimeMonitor {
         message += `💰 *Số dư hiện tại:* ${this.formatNumberWithUnit(change.current, 'USDT')}\n`;
         message += `📊 *Số dư biến động:* +${this.formatNumberWithUnit(change.change, 'USDT')}\n`;
         message += `📥 *Địa chỉ nhận:* \`${address}\`\n`;
-        message += `📤 *Địa chỉ chuyển:* \`${change.relatedAddresses?.receivedFrom?.substring(0, 12) || 'N/A'}...\`\n`;
+        message += `📤 *Địa chỉ chuyển:* \`${change.relatedAddresses?.receivedFrom || 'N/A'}\`\n`;
         message += `⏰ *Thời gian:* ${change.relatedAddresses?.timestamp || new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}\n\n`;
       } else if (change.direction === 'GIẢM') {
         message += `🔴 *Số dư bị giảm*\n`;
         message += `💰 *Số dư hiện tại:* ${this.formatNumberWithUnit(change.current, 'USDT')}\n`;
         message += `📊 *Số dư biến động:* -${this.formatNumberWithUnit(change.change, 'USDT')}\n`;
-        message += `📥 *Địa chỉ nhận:* \`${change.relatedAddresses?.sentTo?.substring(0, 12) || 'N/A'}...\`\n`;
+        message += `📥 *Địa chỉ nhận:* \`${change.relatedAddresses?.sentTo || 'N/A'}\`\n`;
         message += `📤 *Địa chỉ chuyển:* \`${address}\`\n`;
         message += `⏰ *Thời gian:* ${change.relatedAddresses?.timestamp || new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}\n\n`;
       } else if (change.direction === 'MỚI') {
@@ -246,14 +246,14 @@ class RealTimeMonitor {
         message += `🆕 *Loại token:* ${change.type}\n`;
         message += `💰 *Số dư hiện tại:* ${this.formatNumberWithUnit(change.current, 'USDT')}\n`;
         message += `📥 *Địa chỉ nhận:* \`${address}\`\n`;
-        message += `📤 *Địa chỉ chuyển:* \`${change.relatedAddresses?.receivedFrom?.substring(0, 12) || 'N/A'}...\`\n`;
+        message += `📤 *Địa chỉ chuyển:* \`${change.relatedAddresses?.receivedFrom || 'N/A'}\`\n`;
         message += `⏰ *Thời gian:* ${change.relatedAddresses?.timestamp || new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}\n\n`;
       } else if (change.direction === 'MẤT') {
         message += `🔴 *Số dư bị giảm*\n`;
         message += `❌ *Loại token:* ${change.type}\n`;
         message += `📊 *Số dư biến động:* -${this.formatNumberWithUnit(change.previous, 'USDT')}\n`;
         message += `💰 *Số dư hiện tại:* ${this.formatNumberWithUnit(0, 'USDT')}\n`;
-        message += `📥 *Địa chỉ nhận:* \`${change.relatedAddresses?.sentTo?.substring(0, 12) || 'N/A'}...\`\n`;
+        message += `📥 *Địa chỉ nhận:* \`${change.relatedAddresses?.sentTo || 'N/A'}\`\n`;
         message += `📤 *Địa chỉ chuyển:* \`${address}\`\n`;
         message += `⏰ *Thời gian:* ${change.relatedAddresses?.timestamp || new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}\n\n`;
       }

@@ -16,9 +16,9 @@ class TronBalanceMonitor {
       const response = await axios.get(url, {
         headers: {
           'TRON-PRO-API-KEY': this.apiKey,
-          'User-Agent': 'Mozilla/5.0 (compatible; TRONMonitor/1.0)'
+          'User-Agent': 'Mozilla/5.0 (compatible; SuperFastTRONMonitor/1.0)'
         },
-        timeout: 15000
+        timeout: 8000  // Giảm timeout để tăng tốc
       });
       
       const data = response.data;
@@ -268,8 +268,9 @@ class TronBalanceMonitor {
         console.log('\n📢 CÓ BIẾN ĐỘNG:');
         for (const change of changes) {
           if (change.direction === 'TĂNG' || change.direction === 'GIẢM') {
-            const changeSign = parseFloat(change.change) > 0 ? '+' : '';
-            console.log(`   📈 ${change.type} ${change.direction}: ${change.previous} → ${change.current} (${changeSign}${change.change})`);
+            const changeValue = parseFloat(change.change);
+            const changeSign = change.direction === 'TĂNG' ? '+' : '-';
+            console.log(`   📈 ${change.type} ${change.direction}: ${change.previous} → ${change.current} (${changeSign}${changeValue.toFixed(8)})`);
             
             if (change.relatedAddresses) {
               if (change.relatedAddresses.receivedFrom) {

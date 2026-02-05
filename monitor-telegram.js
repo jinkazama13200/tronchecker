@@ -44,9 +44,9 @@ class TronBalanceMonitorWithTelegram {
       const response = await axios.get(url, {
         headers: {
           'TRON-PRO-API-KEY': this.apiKey,
-          'User-Agent': 'Mozilla/5.0 (compatible; TRONMonitor/1.0)'
+          'User-Agent': 'Mozilla/5.0 (compatible; SuperFastTRONMonitor/1.0)'
         },
-        timeout: 15000
+        timeout: 8000  // Giảm timeout để tăng tốc
       });
       
       const data = response.data;
@@ -114,17 +114,14 @@ class TronBalanceMonitorWithTelegram {
 
   async getRelatedAddresses(address, tokenSymbol) {
     try {
-      // Lấy lịch sử giao dịch gần đây cho token cụ thể (giới hạn thời gian để tăng tốc)
-      const now = Date.now();
-      const twentyFourHoursAgo = now - (24 * 60 * 60 * 1000); // 24 giờ trước
-      
-      const historyUrl = `https://api.tronscan.org/api/transfer/trc20?relatedAddress=${address}&limit=5&start=0&sort=-timestamp`;
+      // Lấy lịch sử giao dịch gần đây cho token cụ thể (siêu nhanh)
+      const historyUrl = `https://api.tronscan.org/api/transfer/trc20?relatedAddress=${address}&limit=3&start=0&sort=-timestamp`;
       const historyResponse = await axios.get(historyUrl, {
         headers: {
           'TRON-PRO-API-KEY': this.apiKey,
-          'User-Agent': 'Mozilla/5.0 (compatible; TRONMonitor/1.0)'
+          'User-Agent': 'Mozilla/5.0 (compatible; SuperFastTRONMonitor/1.0)'
         },
-        timeout: 5000  // Giảm timeout để tăng tốc
+        timeout: 3000  // Siêu giảm timeout để tăng tốc
       });
 
       const historyData = historyResponse.data;

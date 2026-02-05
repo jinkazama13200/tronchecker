@@ -180,7 +180,7 @@ class TronBalanceMonitorWithTelegram {
       } else if (change.direction === 'GIẢM') {
         message += `📤 *Địa chỉ nhận:* \`${change.relatedAddresses?.sentTo.substring(0, 12) || 'N/A'}...\`\n`;
         message += `📥 *Địa chỉ chuyển:* \`${address}\`\n`;
-        message += `📊 *Số dư biến động:* ${change.change}\n`;
+        message += `📊 *Số dư biến động:* -${change.change}\n`;
         message += `💰 *Số dư hiện tại:* ${change.current}\n`;
         message += `⏰ *Thời gian:* ${change.relatedAddresses?.timestamp || new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}\n\n`;
       } else if (change.direction === 'MỚI') {
@@ -242,7 +242,7 @@ class TronBalanceMonitorWithTelegram {
               // Định dạng lại giá trị nếu là USDT
               let formattedPrevious = parseFloat(prevToken.balance).toFixed(8);
               let formattedCurrent = parseFloat(tokenData.balance).toFixed(8);
-              let formattedChange = parseFloat(change).toFixed(8);
+              let formattedChange = Math.abs(change).toFixed(8); // Luôn lấy giá trị tuyệt đối để hiển thị
               
               if (tokenSymbol === 'USDT' || tokenData.name.includes('Tether USD')) {
                 // Định dạng lại chỉ với 5 chữ số đầu tiên
@@ -256,7 +256,7 @@ class TronBalanceMonitorWithTelegram {
                 const currWholePartStr = currDotIndex > 0 ? currStr.substring(0, currDotIndex) : currStr;
                 const currTruncated = currWholePartStr.length > 5 ? currWholePartStr.substring(0, 5) : currWholePartStr;
                 
-                const changeStr = change.toString();
+                const changeStr = Math.abs(change).toString(); // Luôn dùng giá trị tuyệt đối
                 const changeDotIndex = changeStr.indexOf('.');
                 const changeWholePartStr = changeDotIndex > 0 ? changeStr.substring(0, changeDotIndex) : changeStr;
                 const changeTruncated = changeWholePartStr.length > 5 ? changeWholePartStr.substring(0, 5) : changeWholePartStr;

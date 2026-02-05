@@ -178,7 +178,7 @@ class TronBalanceMonitor {
               // Định dạng lại giá trị nếu là USDT
               let formattedPrevious = parseFloat(prevToken.balance).toFixed(8);
               let formattedCurrent = parseFloat(tokenData.balance).toFixed(8);
-              let formattedChange = parseFloat(change).toFixed(8);
+              let formattedChange = Math.abs(change).toFixed(8); // Luôn lấy giá trị tuyệt đối để hiển thị
               
               if (tokenSymbol === 'USDT' || tokenData.name.includes('Tether USD')) {
                 // Định dạng lại chỉ với 5 chữ số đầu tiên
@@ -192,7 +192,7 @@ class TronBalanceMonitor {
                 const currWholePartStr = currDotIndex > 0 ? currStr.substring(0, currDotIndex) : currStr;
                 const currTruncated = currWholePartStr.length > 5 ? currWholePartStr.substring(0, 5) : currWholePartStr;
                 
-                const changeStr = change.toString();
+                const changeStr = Math.abs(change).toString(); // Luôn dùng giá trị tuyệt đối
                 const changeDotIndex = changeStr.indexOf('.');
                 const changeWholePartStr = changeDotIndex > 0 ? changeStr.substring(0, changeDotIndex) : changeStr;
                 const changeTruncated = changeWholePartStr.length > 5 ? changeWholePartStr.substring(0, 5) : changeWholePartStr;

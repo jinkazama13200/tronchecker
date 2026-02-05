@@ -5,7 +5,7 @@ const axios = require('axios');
 const fs = require('fs').promises;
 const path = require('path');
 
-class SimpleMonitor {
+class SuperFastMonitor {
   constructor() {
     this.apiKey = process.env.TRON_API_KEY || '938245e0-1ec6-486a-a4ea-6a1ff0e8170b';
     this.telegramBotToken = process.env.TELEGRAM_BOT_TOKEN;
@@ -27,7 +27,7 @@ class SimpleMonitor {
         text: message,
         parse_mode: 'Markdown'
       }, {
-        timeout: 10000
+        timeout: 3000  // Giảm timeout để tăng tốc
       });
 
       console.log('✅ Thông báo Telegram đã gửi thành công');
@@ -46,9 +46,9 @@ class SimpleMonitor {
       const response = await axios.get(url, {
         headers: {
           'TRON-PRO-API-KEY': this.apiKey,
-          'User-Agent': 'Mozilla/5.0 (compatible; SimpleMonitor/1.0)'
+          'User-Agent': 'Mozilla/5.0 (compatible; SuperFastMonitor/1.0)'
         },
-        timeout: 15000
+        timeout: 5000  // Giảm timeout
       });
       
       const data = response.data;
@@ -108,8 +108,6 @@ class SimpleMonitor {
 
   async checkForChanges(address) {
     try {
-      console.log(`🔍 Đang kiểm tra số dư cho: ${address}`);
-      
       // Lấy dữ liệu hiện tại
       const currentData = await this.getWalletData(address);
       
@@ -176,39 +174,11 @@ class SimpleMonitor {
       prevState[address] = currentData;
       await fs.writeFile(this.monitorFile, JSON.stringify(prevState, null, 2));
       
-      // Hiển thị kết quả
-      console.log(`✅ Kiểm tra hoàn tất cho: ${address}`);
-      console.log(`💰 TRX: ${currentData.trxBalance} TRX`);
-      
-      if (Object.keys(currentData.tokens).length > 0) {
-        console.log('🪙 Các token:');
-        for (const [symbol, token] of Object.entries(currentData.tokens)) {
-          console.log(`   - ${symbol} (${token.name}): ${token.balance}`);
-        }
-      } else {
-        console.log('   Không có token TRC20 nào');
-      }
-      
       // Gửi thông báo nếu có thay đổi
       if (changes.length > 0) {
-        console.log('\n📢 CÓ BIẾN ĐỘNG:');
-        for (const change of changes) {
-          if (change.direction === 'THAY ĐỔI') {
-            console.log(`   🔄 ${change.type} thay đổi: ${change.previous} → ${change.current}`);
-          } else if (change.direction === 'MỚI') {
-            console.log(`   🆕 ${change.type} MỚI: ${change.current}`);
-          } else if (change.direction === 'MẤT') {
-            console.log(`   ❌ ${change.type} MẤT: ${change.previous} → ${change.current}`);
-          }
-        }
-        
         // Gửi thông báo Telegram
-        await this.sendNotification(changes, address);
-      } else {
-        console.log('\n✅ Không có biến động số dư');
+        await this.sendFastNotification(changes, address);
       }
-      
-      console.log('');
       
       return changes;
     } catch (error) {
@@ -225,15 +195,15 @@ class SimpleMonitor {
     }
   }
 
-  async sendNotification(changes, address) {
+  async sendFastNotification(changes, address) {
     let message = `🚨 *THÔNG BÁO BIẾN ĐỘNG SỐ DƯ*\n\n`;
     
     for (const change of changes) {
       if (change.direction === 'THAY ĐỔI') {
-        message += `📥 *Địa chỉ nhận:* \`${address}\`\n`;
-        message += `📤 *Địa chỉ chuyển:* \`N/A\`\n`;
         const diff = parseFloat(change.current) - parseFloat(change.previous);
         const sign = diff > 0 ? '+' : '-';
+        message += `📥 *Địa chỉ nhận:* \`${address}\`\n`;
+        message += `📤 *Địa chỉ chuyển:* \`N/A\`\n`;
         message += `📊 *Số dư biến động:* ${sign}${Math.abs(diff).toFixed(8)}\n`;
         message += `💰 *Số dư hiện tại:* ${change.current}\n`;
         message += `⏰ *Thời gian:* ${new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}\n\n`;
@@ -257,7 +227,7 @@ class SimpleMonitor {
 
 // Main execution
 async function main() {
-  const monitor = new SimpleMonitor();
+  const monitor = new SuperFastMonitor();
   
   // Lấy địa chỉ từ tham số dòng lệnh hoặc sử dụng mặc định
   const address = process.argv[2] || 'TQtRKmheCo6tSe725NtywzHiXqqs3LMdxU';

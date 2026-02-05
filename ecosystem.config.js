@@ -1,8 +1,9 @@
 module.exports = {
   apps: [{
     name: 'tron-realtime-monitor',
-    script: './realtime_monitor.js',
+    script: './realtime_monitor_optimized.js',
     cwd: '/home/codespace/clawd/tron_checker',
+    args: 'TQtRKmheCo6tSe725NtywzHiXqqs3LMdxU',  // Thay bằng địa chỉ ví của bạn
     instances: 1,
     autorestart: true,
     watch: false,

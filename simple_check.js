@@ -230,18 +230,29 @@ class SimpleMonitor {
     
     for (const change of changes) {
       if (change.direction === 'THAY ĐỔI') {
-        message += `📥 *Địa chỉ nhận:* \`${address}\`\n`;
-        message += `📤 *Địa chỉ chuyển:* \`N/A\`\n`;
         const diff = parseFloat(change.current) - parseFloat(change.previous);
         const sign = diff > 0 ? '+' : '-';
-        message += `📊 *Số dư biến động:* ${sign}${Math.abs(diff).toFixed(8)}\n`;
-        message += `💰 *Số dư hiện tại:* ${change.current}\n`;
+        if (diff > 0) {
+          message += `🟢 *Số dư được cộng*\n`;
+          message += `💰 *Số dư hiện tại:* ${change.current}\n`;
+          message += `📊 *Số dư biến động:* ${sign}${Math.abs(diff).toFixed(8)}\n`;
+          message += `📥 *Địa chỉ nhận:* \`${address}\`\n`;
+          message += `📤 *Địa chỉ chuyển:* \`N/A\`\n`;
+        } else {
+          message += `🔴 *Số dư bị giảm*\n`;
+          message += `💰 *Số dư hiện tại:* ${change.current}\n`;
+          message += `📊 *Số dư biến động:* ${sign}${Math.abs(diff).toFixed(8)}\n`;
+          message += `📤 *Địa chỉ nhận:* \`N/A\`\n`;
+          message += `📥 *Địa chỉ chuyển:* \`${address}\`\n`;
+        }
         message += `⏰ *Thời gian:* ${new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}\n\n`;
       } else if (change.direction === 'MỚI') {
+        message += `🟢 *Số dư được cộng*\n`;
         message += `🆕 *Loại token:* ${change.type}\n`;
         message += `💰 *Số dư hiện tại:* ${change.current}\n`;
         message += `⏰ *Thời gian:* ${new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}\n\n`;
       } else if (change.direction === 'MẤT') {
+        message += `🔴 *Số dư bị giảm*\n`;
         message += `❌ *Loại token:* ${change.type}\n`;
         message += `📊 *Số dư biến động:* -${change.previous}\n`;
         message += `💰 *Số dư hiện tại:* ${change.current}\n`;

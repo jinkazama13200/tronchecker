@@ -169,22 +169,26 @@ class TronBalanceMonitorWithTelegram {
     
     for (const change of changes) {
       if (change.direction === 'TĂNG') {
+        message += `🟢 *Số dư được cộng*\n`;
+        message += `💰 *Số dư hiện tại:* ${change.current}\n`;
+        message += `📊 *Số dư biến động:* +${change.change}\n`;
         message += `📥 *Địa chỉ nhận:* \`${address}\`\n`;
         message += `📤 *Địa chỉ chuyển:* \`${change.relatedAddresses?.receivedFrom.substring(0, 12) || 'N/A'}...\`\n`;
-        message += `📊 *Số dư biến động:* +${change.change}\n`;
-        message += `💰 *Số dư hiện tại:* ${change.current}\n`;
         message += `⏰ *Thời gian:* ${change.relatedAddresses?.timestamp || new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}\n\n`;
       } else if (change.direction === 'GIẢM') {
+        message += `🔴 *Số dư bị giảm*\n`;
+        message += `💰 *Số dư hiện tại:* ${change.current}\n`;
+        message += `📊 *Số dư biến động:* -${change.change}\n`;
         message += `📤 *Địa chỉ nhận:* \`${change.relatedAddresses?.sentTo.substring(0, 12) || 'N/A'}...\`\n`;
         message += `📥 *Địa chỉ chuyển:* \`${address}\`\n`;
-        message += `📊 *Số dư biến động:* -${change.change}\n`;
-        message += `💰 *Số dư hiện tại:* ${change.current}\n`;
         message += `⏰ *Thời gian:* ${change.relatedAddresses?.timestamp || new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}\n\n`;
       } else if (change.direction === 'MỚI') {
+        message += `🟢 *Số dư được cộng*\n`;
         message += `🆕 *Loại token:* ${change.type}\n`;
         message += `💰 *Số dư hiện tại:* ${change.current}\n`;
         message += `⏰ *Thời gian:* ${new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}\n\n`;
       } else if (change.direction === 'MẤT') {
+        message += `🔴 *Số dư bị giảm*\n`;
         message += `❌ *Loại token:* ${change.type}\n`;
         message += `📊 *Số dư biến động:* -${change.previous}\n`;
         message += `💰 *Số dư hiện tại:* 0.00000000\n`;

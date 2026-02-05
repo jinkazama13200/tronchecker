@@ -282,58 +282,60 @@ class RealTimeMonitor {
       
       const changes = [];
       
-      // So sánh các token (bỏ qua TRX)
+      // Chỉ so sánh USDT (bỏ qua TRX và các token khác)
       if (prevData) {
-        for (const [tokenSymbol, tokenData] of Object.entries(currentData.tokens)) {
-          const prevToken = prevData.tokens && prevData.tokens[tokenSymbol];
+        // Kiểm tra xem có USDT trong ví hiện tại không
+        const currentUsdtData = currentData.tokens['USDT'];
+        
+        if (currentUsdtData) {
+          // Lấy dữ liệu USDT trước đó nếu có
+          const prevUsdt = prevData.tokens && prevData.tokens['USDT'];
           
-          if (prevToken) {
-            if (parseFloat(prevToken.balance) !== parseFloat(tokenData.balance)) {
-              const prevValue = parseFloat(prevToken.balance);
-              const currValue = parseFloat(tokenData.balance);
+          if (prevUsdt) {
+            // So sánh số dư USDT hiện tại với trước đó
+            if (parseFloat(prevUsdt.balance) !== parseFloat(currentUsdtData.balance)) {
+              const prevValue = parseFloat(prevUsdt.balance);
+              const currValue = parseFloat(currentUsdtData.balance);
               const change = currValue - prevValue;
               
               // Lấy thông tin giao dịch gần đây để xác định địa chỉ liên quan
-              const relatedAddresses = await this.getRelatedAddresses(address, tokenSymbol);
+              const relatedAddresses = await this.getRelatedAddresses(address, 'USDT');
               
               changes.push({
-                type: tokenSymbol,
-                previous: parseFloat(prevToken.balance).toFixed(8),
-                current: parseFloat(tokenData.balance).toFixed(8),
+                type: 'USDT',
+                previous: parseFloat(prevUsdt.balance).toFixed(8),
+                current: parseFloat(currentUsdtData.balance).toFixed(8),
                 change: parseFloat(change).toFixed(8),
                 direction: change > 0 ? 'TĂNG' : 'GIẢM',
-                name: tokenData.name,
+                name: currentUsdtData.name,
                 relatedAddresses: relatedAddresses
               });
             }
           } else {
-            // Token mới xuất hiện
+            // USDT mới xuất hiện trong ví
             changes.push({
-              type: tokenSymbol,
+              type: 'USDT',
               previous: '0.00000000',
-              current: parseFloat(tokenData.balance).toFixed(8),
-              change: parseFloat(tokenData.balance).toFixed(8),
+              current: parseFloat(currentUsdtData.balance).toFixed(8),
+              change: parseFloat(currentUsdtData.balance).toFixed(8),
               direction: 'MỚI',
-              name: tokenData.name,
+              name: currentUsdtData.name,
               relatedAddresses: { receivedFrom: null, sentTo: null }
             });
           }
         }
         
-        // Kiểm tra token bị mất
-        if (prevData.tokens) {
-          for (const [tokenSymbol, tokenData] of Object.entries(prevData.tokens)) {
-            if (!currentData.tokens[tokenSymbol]) {
-              changes.push({
-                type: tokenSymbol,
-                previous: parseFloat(tokenData.balance).toFixed(8),
-                current: '0.00000000',
-                change: parseFloat(tokenData.balance).toFixed(8),
-                direction: 'MẤT',
-                name: tokenData.name
-              });
-            }
-          }
+        // Kiểm tra xem USDT có bị mất không (trước có, giờ không có)
+        const prevUsdt = prevData.tokens && prevData.tokens['USDT'];
+        if (prevUsdt && !currentData.tokens['USDT']) {
+          changes.push({
+            type: 'USDT',
+            previous: parseFloat(prevUsdt.balance).toFixed(8),
+            current: '0.00000000',
+            change: parseFloat(prevUsdt.balance).toFixed(8),
+            direction: 'MẤT',
+            name: prevUsdt.name
+          });
         }
       }
       

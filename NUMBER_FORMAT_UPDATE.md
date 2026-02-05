@@ -21,9 +21,9 @@
 - Hiển thị đúng con số nhận được mà không có dấu chấm phân cách (ví dụ: 1, 1000, 1000000)
 - Số lượng lớn (ví dụ: 336312567.00000000) sẽ được hiển thị là 336312567 USDT (loại bỏ số 0 không cần thiết)
 - Dễ dàng nhận biết số lượng thực tế
-- Có thêm đơn vị (USDT hoặc tên token) đằng sau số
+- Có thêm đơn vị (USDT) đằng sau số
 - Loại bỏ các số 0 không cần thiết ở phần thập phân
-- Bỏ qua thông báo TRX, chỉ thông báo các token (USDT và các token khác)
+- Chỉ thông báo biến động cho USDT, bỏ qua tất cả các token khác
 - Cải thiện trải nghiệm người dùng đáng kể
 
 ## Ví dụ:

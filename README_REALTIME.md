@@ -10,7 +10,7 @@ Có 2 phiên bản:
 ## Tính năng
 - 🚀 **Theo dõi liên tục 24/7** - chế độ standby
 - ⚡ **Phát hiện tức thì** - kiểm tra mỗi 5 giây
-- 📱 **Thông báo Telegram** - khi có biến động (chỉ các token, không bao gồm TRX)
+- 📱 **Thông báo Telegram** - khi có biến động USDT
 - 📍 **Hiển thị địa chỉ gửi đến** - khi số dư tăng
 - 📤 **Hiển thị địa chỉ gửi đi** - khi số dư giảm
 - 🔢 **Định dạng số nguyên bản** - hiển thị đúng con số nhận được (1, 1000, 1000000)

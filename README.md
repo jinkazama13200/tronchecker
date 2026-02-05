@@ -7,6 +7,11 @@ Công cụ kiểm tra số dư và giao dịch cho ví TRON, đặc biệt là U
 - Kiểm tra số dư TRX và USDT (Tether USD) cho địa chỉ ví TRON
 - Hiển thị các token TRC20 khác trong ví
 - Kiểm tra lịch sử giao dịch (nếu có)
+- Cảnh báo thời gian thực khi có biến động số dư
+- Thông báo qua Telegram khi có thay đổi
+- Theo dõi nhiều địa chỉ ví cùng lúc
+- Hiển thị địa chỉ gửi/nhận khi có giao dịch
+- Tối ưu hóa hiệu suất và độ ổn định
 
 ## Yêu cầu
 

@@ -3,12 +3,17 @@
 ## Mô tả
 Hệ thống theo dõi thời gian thực cho ví TRON, phát hiện và thông báo ngay lập tức khi có biến động số dư.
 
+Có 2 phiên bản:
+- **realtime_monitor.js**: Phiên bản cơ bản
+- **realtime_monitor_optimized.js**: Phiên bản tối ưu hóa với thông báo Telegram (được sử dụng chính)
+
 ## Tính năng
 - 🚀 **Theo dõi liên tục 24/7** - chế độ standby
 - ⚡ **Phát hiện tức thì** - kiểm tra mỗi 5 giây
 - 📱 **Thông báo Telegram** - khi có biến động
 - 📍 **Hiển thị địa chỉ gửi đến** - khi số dư tăng
 - 📤 **Hiển thị địa chỉ gửi đi** - khi số dư giảm
+- 🔢 **Định dạng số dễ đọc** - số có phân cách hàng nghìn (1,000,000)
 - 🔁 **Tự động khởi động lại** - nếu có lỗi
 - 📊 **Hiển thị đầy đủ thông tin** - số dư, biến động, thời gian, địa chỉ liên quan
 

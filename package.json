@@ -11,6 +11,7 @@
     "fast-check": "node fast_check.js",
     "super-fast-check": "node super_fast_check.js",
     "realtime": "node realtime_monitor.js",
+    "realtime-optimized": "node realtime_monitor_optimized.js",
     "pm2-start": "pm2 start ecosystem.config.js",
     "pm2-stop": "pm2 stop tron-realtime-monitor",
     "pm2-restart": "pm2 restart tron-realtime-monitor",

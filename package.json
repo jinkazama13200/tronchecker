@@ -11,6 +11,11 @@
     "fast-check": "node fast_check.js",
     "super-fast-check": "node super_fast_check.js",
     "realtime": "node realtime_monitor.js",
+    "pm2-start": "pm2 start ecosystem.config.js",
+    "pm2-stop": "pm2 stop tron-realtime-monitor",
+    "pm2-restart": "pm2 restart tron-realtime-monitor",
+    "pm2-status": "pm2 status",
+    "pm2-logs": "pm2 logs tron-realtime-monitor",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [

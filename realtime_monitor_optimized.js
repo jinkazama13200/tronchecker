@@ -179,9 +179,11 @@ class RealTimeMonitor {
       return num;
     }
     
+    // Format the number to remove unnecessary trailing zeros
+    let formatted = parseFloat(number).toString();
+    
     // Separate integer and decimal parts
-    const str = number.toString();
-    const [integerPart, decimalPart] = str.split('.');
+    const [integerPart, decimalPart] = formatted.split('.');
     
     // Format integer part with thousand separators (using dot as separator)
     let formattedInteger = '';
@@ -192,9 +194,16 @@ class RealTimeMonitor {
       formattedInteger += integerPart[i];
     }
     
-    // Return formatted number with original decimal part if exists
+    // Return formatted number with decimal part only if it has significant digits
     if (decimalPart !== undefined) {
-      return `${formattedInteger}.${decimalPart}`;
+      // Remove trailing zeros from decimal part
+      const trimmedDecimal = decimalPart.replace(/0+$/, '');
+      
+      if (trimmedDecimal.length > 0) {
+        return `${formattedInteger}.${trimmedDecimal}`;
+      } else {
+        return formattedInteger;
+      }
     } else {
       return formattedInteger;
     }

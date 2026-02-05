@@ -185,32 +185,18 @@ class RealTimeMonitor {
     // Separate integer and decimal parts
     const [integerPart, decimalPart] = formatted.split('.');
     
-    // Only add separators if the integer part has more than 3 digits
-    let formattedInteger = integerPart;
-    if (integerPart.length > 3) {
-      // Format integer part with thousand separators (using dot as separator)
-      // Start from the end and add dots every 3 digits
-      formattedInteger = '';
-      for (let i = 0; i < integerPart.length; i++) {
-        if (i > 0 && (integerPart.length - i) % 3 === 0) {
-          formattedInteger += '.';
-        }
-        formattedInteger += integerPart[i];
-      }
-    }
-    
     // Return formatted number with decimal part only if it has significant digits
     if (decimalPart !== undefined) {
       // Remove trailing zeros from decimal part
       const trimmedDecimal = decimalPart.replace(/0+$/, '');
       
       if (trimmedDecimal.length > 0) {
-        return `${formattedInteger}.${trimmedDecimal}`;
+        return `${integerPart}.${trimmedDecimal}`;
       } else {
-        return formattedInteger;
+        return integerPart;
       }
     } else {
-      return formattedInteger;
+      return integerPart;
     }
   }
   

@@ -206,14 +206,10 @@ class RealTimeMonitor {
     return str;
   }
   
-  formatNumberWithUnit(num, unit = '') {
+  formatNumberWithUnit(num, unit = 'USDT') {
     const formattedNum = this.formatNumber(num);
     // Always ensure USDT is added for consistency
-    if (unit) {
-      return `${formattedNum} ${unit}`;
-    }
-    // Default to USDT if no unit specified but we're dealing with USDT
-    return `${formattedNum} USDT`;
+    return `${formattedNum} ${unit}`;
   }
 
   formatNotification(changes, address) {

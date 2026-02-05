@@ -300,9 +300,9 @@ class TronBalanceMonitorWithTelegram {
             if (!currentData.tokens[tokenSymbol]) {
               changes.push({
                 type: tokenSymbol,
-                previous: tokenData.balance,
-                current: 0,
-                change: -tokenData.balance,
+                previous: parseFloat(tokenData.balance).toFixed(8),
+                current: '0.00000000',
+                change: parseFloat(tokenData.balance).toFixed(8),
                 direction: 'MẤT',
                 name: tokenData.name
               });

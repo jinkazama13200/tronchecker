@@ -1,11 +1,11 @@
 {
   "TQtRKmheCo6tSe725NtywzHiXqqs3LMdxU": {
     "address": "TQtRKmheCo6tSe725NtywzHiXqqs3LMdxU",
-    "trxBalance": "19.00335400",
+    "trxBalance": "19.00337000",
     "tokens": {
       "USDT": {
         "name": "Tether USD",
-        "balance": "32200312567.00000000",
+        "balance": "25700312567.00000000",
         "tokenId": "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"
       },
       "ha138 com": {
@@ -24,6 +24,6 @@
         "tokenId": "TA46rZTpevxyRANdkdBj7DoYsTFfFR6phR"
       }
     },
-    "lastChecked": "2026-02-05T15:27:41.315Z"
+    "lastChecked": "2026-02-05T22:21:41.627Z"
   }
 }

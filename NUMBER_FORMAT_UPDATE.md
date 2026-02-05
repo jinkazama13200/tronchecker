@@ -18,12 +18,13 @@
 - Thêm mục "Định dạng số dễ đọc" vào danh sách tính năng
 
 ### 4. Kết quả:
-- Số lượng lớn (ví dụ: 336312567.00000000) sẽ được hiển thị là 336.312.567.00000000
+- Số lượng lớn (ví dụ: 336312567.00000000) sẽ được hiển thị là 336.312.567.00000000 USDT
 - Dễ dàng phân biệt hàng nghìn, hàng triệu, hàng tỷ
+- Có thêm đơn vị (USDT hoặc tên token) đằng sau số
 - Cải thiện trải nghiệm người dùng đáng kể
 
 ## Ví dụ:
 Trước: "Số dư hiện tại: 336312567.00000000"
-Sau: "Số dư hiện tại: 336.312.567.00000000"
+Sau: "Số dư hiện tại: 336.312.567.00000000 USDT"
 
 Điều này giúp người dùng dễ dàng nhận biết số lượng mà không phải đếm từng chữ số.

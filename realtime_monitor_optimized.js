@@ -199,37 +199,49 @@ class RealTimeMonitor {
       return formattedInteger;
     }
   }
+  
+  formatNumberWithUnit(num, unit = '') {
+    const formattedNum = this.formatNumber(num);
+    if (unit) {
+      return `${formattedNum} ${unit}`;
+    }
+    return formattedNum;
+  }
 
   formatNotification(changes, address) {
     let message = `🚨 *THÔNG BÁO BIẾN ĐỘNG SỐ DƯ*\n\n`;
     
     for (const change of changes) {
       if (change.direction === 'TĂNG') {
+        const unit = change.type === 'USDT' ? 'USDT' : change.type;
         message += `🟢 *Số dư được cộng*\n`;
-        message += `💰 *Số dư hiện tại:* ${this.formatNumber(change.current)}\n`;
-        message += `📊 *Số dư biến động:* +${this.formatNumber(change.change)}\n`;
+        message += `💰 *Số dư hiện tại:* ${this.formatNumberWithUnit(change.current, unit)}\n`;
+        message += `📊 *Số dư biến động:* +${this.formatNumberWithUnit(change.change, unit)}\n`;
         message += `📥 *Địa chỉ nhận:* \`${address}\`\n`;
         message += `📤 *Địa chỉ chuyển:* \`${change.relatedAddresses?.receivedFrom?.substring(0, 12) || 'N/A'}...\`\n`;
         message += `⏰ *Thời gian:* ${change.relatedAddresses?.timestamp || new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}\n\n`;
       } else if (change.direction === 'GIẢM') {
+        const unit = change.type === 'USDT' ? 'USDT' : change.type;
         message += `🔴 *Số dư bị giảm*\n`;
-        message += `💰 *Số dư hiện tại:* ${this.formatNumber(change.current)}\n`;
-        message += `📊 *Số dư biến động:* -${this.formatNumber(change.change)}\n`;
+        message += `💰 *Số dư hiện tại:* ${this.formatNumberWithUnit(change.current, unit)}\n`;
+        message += `📊 *Số dư biến động:* -${this.formatNumberWithUnit(change.change, unit)}\n`;
         message += `📥 *Địa chỉ nhận:* \`${change.relatedAddresses?.sentTo?.substring(0, 12) || 'N/A'}...\`\n`;
         message += `📤 *Địa chỉ chuyển:* \`${address}\`\n`;
         message += `⏰ *Thời gian:* ${change.relatedAddresses?.timestamp || new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}\n\n`;
       } else if (change.direction === 'MỚI') {
+        const unit = change.type === 'USDT' ? 'USDT' : change.type;
         message += `🟢 *Số dư được cộng*\n`;
         message += `🆕 *Loại token:* ${change.type}\n`;
-        message += `💰 *Số dư hiện tại:* ${this.formatNumber(change.current)}\n`;
+        message += `💰 *Số dư hiện tại:* ${this.formatNumberWithUnit(change.current, unit)}\n`;
         message += `📥 *Địa chỉ nhận:* \`${address}\`\n`;
         message += `📤 *Địa chỉ chuyển:* \`${change.relatedAddresses?.receivedFrom?.substring(0, 12) || 'N/A'}...\`\n`;
         message += `⏰ *Thời gian:* ${change.relatedAddresses?.timestamp || new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}\n\n`;
       } else if (change.direction === 'MẤT') {
+        const unit = change.type === 'USDT' ? 'USDT' : change.type;
         message += `🔴 *Số dư bị giảm*\n`;
         message += `❌ *Loại token:* ${change.type}\n`;
-        message += `📊 *Số dư biến động:* -${this.formatNumber(change.previous)}\n`;
-        message += `💰 *Số dư hiện tại:* ${this.formatNumber(0)}\n`;
+        message += `📊 *Số dư biến động:* -${this.formatNumberWithUnit(change.previous, unit)}\n`;
+        message += `💰 *Số dư hiện tại:* ${this.formatNumberWithUnit(0, unit)}\n`;
         message += `📥 *Địa chỉ nhận:* \`${change.relatedAddresses?.sentTo?.substring(0, 12) || 'N/A'}...\`\n`;
         message += `📤 *Địa chỉ chuyển:* \`${address}\`\n`;
         message += `⏰ *Thời gian:* ${change.relatedAddresses?.timestamp || new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}\n\n`;

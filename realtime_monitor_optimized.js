@@ -359,15 +359,15 @@ class RealTimeMonitor {
         }
         
         // Kiểm tra xem USDT có bị mất không (trước có, giờ không có)
-        const prevUsdt = prevData.tokens && prevData.tokens['USDT'];
-        if (prevUsdt && !currentData.tokens['USDT']) {
+        const prevUsdtCheck = prevData.tokens && prevData.tokens['USDT'];
+        if (prevUsdtCheck && !currentData.tokens['USDT']) {
           changes.push({
             type: 'USDT',
-            previous: parseFloat(prevUsdt.balance).toFixed(8),
+            previous: parseFloat(prevUsdtCheck.balance).toFixed(8),
             current: '0.00000000',
-            change: parseFloat(prevUsdt.balance).toFixed(8),
+            change: parseFloat(prevUsdtCheck.balance).toFixed(8),
             direction: 'MẤT',
-            name: prevUsdt.name
+            name: prevUsdtCheck.name
           });
         }
       }

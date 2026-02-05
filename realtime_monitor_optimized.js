@@ -194,16 +194,38 @@ class RealTimeMonitor {
       // Remove trailing zeros from decimal part
       const trimmedDecimal = decimalPart.replace(/0+$/, '');
       
+      // Format integer part with thousand separators only if it has 7 or more digits (>= 1,000,000)
+      let formattedInteger = integerPart;
+      if (integerPart.length >= 7) {
+        formattedInteger = '';
+        for (let i = 0; i < integerPart.length; i++) {
+          if (i > 0 && (integerPart.length - i) % 3 === 0) {
+            formattedInteger += '.';
+          }
+          formattedInteger += integerPart[i];
+        }
+      }
+      
       // Return integer part only if decimal part is empty after trimming
       if (trimmedDecimal === '') {
-        return integerPart;
+        return formattedInteger;
       } else {
-        return `${integerPart}.${trimmedDecimal}`;
+        return `${formattedInteger}.${trimmedDecimal}`;
       }
+    } else {
+      // If no decimal point, format with thousand separators only if it has 7 or more digits (>= 1,000,000)
+      let formattedInteger = str;
+      if (str.length >= 7) {
+        formattedInteger = '';
+        for (let i = 0; i < str.length; i++) {
+          if (i > 0 && (str.length - i) % 3 === 0) {
+            formattedInteger += '.';
+          }
+          formattedInteger += str[i];
+        }
+      }
+      return formattedInteger;
     }
-    
-    // If no decimal point, return as is
-    return str;
   }
   
   formatNumberWithUnit(num, unit = 'USDT') {

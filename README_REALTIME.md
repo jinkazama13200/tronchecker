@@ -10,7 +10,7 @@ Có 2 phiên bản:
 ## Tính năng
 - 🚀 **Theo dõi liên tục 24/7** - chế độ standby
 - ⚡ **Phát hiện tức thì** - kiểm tra mỗi 5 giây
-- 📱 **Thông báo Telegram** - khi có biến động
+- 📱 **Thông báo Telegram** - khi có biến động (chỉ các token, không bao gồm TRX)
 - 📍 **Hiển thị địa chỉ gửi đến** - khi số dư tăng
 - 📤 **Hiển thị địa chỉ gửi đi** - khi số dư giảm
 - 🔢 **Định dạng số dễ đọc** - số có phân cách hàng nghìn (1.000, 1.000.000)

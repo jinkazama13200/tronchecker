@@ -24,6 +24,7 @@
 - Dễ dàng phân biệt hàng nghìn, hàng triệu, hàng tỷ
 - Có thêm đơn vị (USDT hoặc tên token) đằng sau số
 - Loại bỏ các số 0 không cần thiết ở phần thập phân
+- Bỏ qua thông báo TRX, chỉ thông báo các token (USDT và các token khác)
 - Cải thiện trải nghiệm người dùng đáng kể
 
 ## Ví dụ:

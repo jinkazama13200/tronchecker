@@ -296,23 +296,8 @@ class RealTimeMonitor {
       
       const changes = [];
       
-      // So sánh số dư TRX
+      // So sánh các token (bỏ qua TRX)
       if (prevData) {
-        const prevTrxBalance = parseFloat(prevData.trxBalance);
-        const currentTrxBalance = parseFloat(currentData.trxBalance);
-        
-        if (prevTrxBalance !== currentTrxBalance) {
-          const change = currentTrxBalance - prevTrxBalance;
-          changes.push({
-            type: 'TRX',
-            previous: parseFloat(prevTrxBalance).toFixed(8),
-            current: parseFloat(currentTrxBalance).toFixed(8),
-            change: parseFloat(change).toFixed(8),
-            direction: change > 0 ? 'TĂNG' : 'GIẢM'
-          });
-        }
-        
-        // So sánh các token
         for (const [tokenSymbol, tokenData] of Object.entries(currentData.tokens)) {
           const prevToken = prevData.tokens && prevData.tokens[tokenSymbol];
           

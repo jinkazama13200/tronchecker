@@ -205,16 +205,13 @@ class RealTimeMonitor {
       // Remove trailing zeros from decimal part
       const trimmedDecimal = decimalPart.replace(/0+$/, '');
       
-      // Format integer part with thousand separators only if it has 7 or more digits (>= 1,000,000)
-      let formattedInteger = integerPart;
-      if (integerPart.length >= 7) {
-        formattedInteger = '';
-        for (let i = 0; i < integerPart.length; i++) {
-          if (i > 0 && (integerPart.length - i) % 3 === 0) {
-            formattedInteger += '.';
-          }
-          formattedInteger += integerPart[i];
+      // Format integer part with thousand separators (commas) - always use commas for thousands
+      let formattedInteger = '';
+      for (let i = 0; i < integerPart.length; i++) {
+        if (i > 0 && (integerPart.length - i) % 3 === 0) {
+          formattedInteger += ',';
         }
+        formattedInteger += integerPart[i];
       }
       
       // Return integer part only if decimal part is empty after trimming
@@ -224,16 +221,13 @@ class RealTimeMonitor {
         return `${formattedInteger}.${trimmedDecimal}`;
       }
     } else {
-      // If no decimal point, format with thousand separators only if it has 7 or more digits (>= 1,000,000)
-      let formattedInteger = str;
-      if (str.length >= 7) {
-        formattedInteger = '';
-        for (let i = 0; i < str.length; i++) {
-          if (i > 0 && (str.length - i) % 3 === 0) {
-            formattedInteger += '.';
-          }
-          formattedInteger += str[i];
+      // If no decimal point, format with thousand separators (commas) - always use commas for thousands
+      let formattedInteger = '';
+      for (let i = 0; i < str.length; i++) {
+        if (i > 0 && (str.length - i) % 3 === 0) {
+          formattedInteger += ',';
         }
+        formattedInteger += str[i];
       }
       return formattedInteger;
     }
@@ -241,8 +235,8 @@ class RealTimeMonitor {
   
   formatNumberWithUnit(num, unit = 'USDT') {
     const formattedNum = this.formatNumber(num);
-    // Always ensure USDT is added for consistency
-    return `${formattedNum} ${unit}`;
+    // Always ensure USDT is added for consistency and comma after the number
+    return `${formattedNum}, ${unit}`;
   }
 
   formatNotification(changes, address) {

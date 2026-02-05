@@ -179,16 +179,31 @@ class RealTimeMonitor {
       return num;
     }
     
-    // Use JavaScript's built-in method to remove trailing zeros
-    // Convert to number and back to string to get the shortest representation
-    let result = parseFloat(number).toString();
+    // Use toPrecision to get the shortest representation without trailing zeros
+    // Convert to number first to eliminate floating point precision issues
+    const floatNum = parseFloat(number);
     
-    // If the result is in scientific notation, convert it back to regular notation
-    if (result.includes('e')) {
-      result = number.toFixed(20).replace(/0+$/, '').replace(/\.$/, '');
+    // Convert to string and process to remove trailing zeros properly
+    let str = floatNum.toString();
+    
+    // If it contains a decimal point, process the decimal part
+    if (str.includes('.')) {
+      // Split into integer and decimal parts
+      const [integerPart, decimalPart] = str.split('.');
+      
+      // Remove trailing zeros from decimal part
+      const trimmedDecimal = decimalPart.replace(/0+$/, '');
+      
+      // Return integer part only if decimal part is empty after trimming
+      if (trimmedDecimal === '') {
+        return integerPart;
+      } else {
+        return `${integerPart}.${trimmedDecimal}`;
+      }
     }
     
-    return result;
+    // If no decimal point, return as is
+    return str;
   }
   
   formatNumberWithUnit(num, unit = '') {

@@ -232,7 +232,7 @@ class FastMonitor {
       if (change.direction === 'THAY ĐỔI') {
         message += `📥 *Địa chỉ nhận:* \`${address}\`\n`;
         message += `📤 *Địa chỉ chuyển:* \`N/A\`\n`;
-        message += `📈 *Số dư biến động:* ${parseFloat(change.current) - parseFloat(change.previous) > 0 ? '+' : ''}${(parseFloat(change.current) - parseFloat(change.previous)).toFixed(8)}\n`;
+        message += `📊 *Số dư biến động:* ${parseFloat(change.current) - parseFloat(change.previous) > 0 ? '+' : ''}${(parseFloat(change.current) - parseFloat(change.previous)).toFixed(8)}\n`;
         message += `💰 *Số dư hiện tại:* ${change.current}\n`;
         message += `⏰ *Thời gian:* ${new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}\n\n`;
       } else if (change.direction === 'MỚI') {
@@ -241,7 +241,7 @@ class FastMonitor {
         message += `⏰ *Thời gian:* ${new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}\n\n`;
       } else if (change.direction === 'MẤT') {
         message += `❌ *Loại token:* ${change.type}\n`;
-        message += `📉 *Số dư biến động:* -${change.previous}\n`;
+        message += `📊 *Số dư biến động:* -${change.previous}\n`;
         message += `💰 *Số dư hiện tại:* ${change.current}\n`;
         message += `⏰ *Thời gian:* ${new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}\n\n`;
       }

@@ -226,26 +226,28 @@ class SimpleMonitor {
   }
 
   async sendNotification(changes, address) {
-    let message = `┌─ 🚨 *CÓ BIẾN ĐỘNG SỐ DƯ*\n`;
-    message += `├─ 📍 *Địa chỉ ví:* \`${address}\`\n`;
-    message += `└─────────────────────────────────────\n\n`;
+    let message = `🚨 *THÔNG BÁO BIẾN ĐỘNG SỐ DƯ*\n\n`;
     
     for (const change of changes) {
       if (change.direction === 'THAY ĐỔI') {
-        message += `┌─ 🔄 *${change.type}* thay đổi\n`;
-        message += `├─ *Trước:* ${change.previous}\n`;
-        message += `└─ *Hiện tại:* ${change.current}\n\n`;
+        message += `📥 *Địa chỉ nhận:* \`${address}\`\n`;
+        message += `📤 *Địa chỉ chuyển:* \`N/A\`\n`;
+        message += `📊 *Số dư biến động:* ${parseFloat(change.current) - parseFloat(change.previous) > 0 ? '+' : ''}${(parseFloat(change.current) - parseFloat(change.previous)).toFixed(8)}\n`;
+        message += `💰 *Số dư hiện tại:* ${change.current}\n`;
+        message += `⏰ *Thời gian:* ${new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}\n\n`;
       } else if (change.direction === 'MỚI') {
-        message += `┌─ 🆕 *${change.type}* mới\n`;
-        message += `└─ *Số lượng:* ${change.current}\n\n`;
+        message += `🆕 *Loại token:* ${change.type}\n`;
+        message += `💰 *Số dư hiện tại:* ${change.current}\n`;
+        message += `⏰ *Thời gian:* ${new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}\n\n`;
       } else if (change.direction === 'MẤT') {
-        message += `┌─ ❌ *${change.type}* mất\n`;
-        message += `├─ *Trước:* ${change.previous}\n`;
-        message += `└─ *Hiện tại:* ${change.current}\n\n`;
+        message += `❌ *Loại token:* ${change.type}\n`;
+        message += `📊 *Số dư biến động:* -${change.previous}\n`;
+        message += `💰 *Số dư hiện tại:* ${change.current}\n`;
+        message += `⏰ *Thời gian:* ${new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}\n\n`;
       }
     }
     
-    message += `⏰ *Thời gian:* ${new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}`;
+    message += `📍 *Địa chỉ ví:* \`${address}\``;
     
     await this.sendTelegramNotification(message);
   }

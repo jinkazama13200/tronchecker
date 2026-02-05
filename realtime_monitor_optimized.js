@@ -90,13 +90,13 @@ class RealTimeMonitor {
   async getRelatedAddresses(address, tokenSymbol) {
     try {
       // Lấy lịch sử giao dịch gần đây cho token cụ thể
-      const historyUrl = `https://api.tronscan.org/api/transfer/trc20?relatedAddress=${address}&limit=30&start=0&sort=-timestamp`;
+      const historyUrl = `https://api.tronscan.org/api/transfer/trc20?relatedAddress=${address}&limit=50&start=0&sort=-timestamp`;
       const historyResponse = await axios.get(historyUrl, {
         headers: {
           'TRON-PRO-API-KEY': this.apiKey,
           'User-Agent': 'Mozilla/5.0 (compatible; RealTimeMonitor/1.0)'
         },
-        timeout: 8000  // Tăng thời gian chờ để đảm bảo nhận được dữ liệu
+        timeout: 10000  // Tăng thời gian chờ để đảm bảo nhận được dữ liệu
       });
 
       const historyData = historyResponse.data;
@@ -110,10 +110,10 @@ class RealTimeMonitor {
         if (tokenTransfers.length > 0) {
           // Tìm giao dịch gần nhất phù hợp với thời điểm thay đổi số dư
           const now = Date.now();
-          const sixHoursAgo = now - (6 * 60 * 60 * 1000); // Mở rộng phạm vi tìm kiếm lên 6 tiếng
+          const twelveHoursAgo = now - (12 * 60 * 60 * 1000); // Mở rộng phạm vi tìm kiếm lên 12 tiếng
           
           for (const transfer of tokenTransfers) {
-            // Chuyển địa chỉ về dạng lowercase để so sánh chính xác
+            // So sánh địa chỉ mà không phân biệt chữ hoa/thường
             const transferTo = transfer.to ? transfer.to.toLowerCase() : '';
             const transferFrom = transfer.from ? transfer.from.toLowerCase() : '';
             const addressLower = address.toLowerCase();
@@ -121,30 +121,30 @@ class RealTimeMonitor {
             const transferTime = transfer.block_ts;
             
             // Kiểm tra xem giao dịch có trong khoảng thời gian gần đây không
-            if (transferTime >= sixHoursAgo) {
+            if (transferTime >= twelveHoursAgo) {
               if (transferTo === addressLower) {
                 // Đây là giao dịch nhận
                 return {
-                  receivedFrom: transfer.from,  // Trả về địa chỉ đầy đủ (không chuyển thành lowercase)
+                  receivedFrom: transfer.from,  // Trả về địa chỉ đầy đủ
                   sentTo: null,
                   transactionId: transfer.transaction_id,
-                  amount: transfer.amount,
+                  amount: transfer.amount_str || transfer.amount,  // Ưu tiên dùng amount_str nếu có
                   timestamp: new Date(transfer.block_ts).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })
                 };
               } else if (transferFrom === addressLower) {
                 // Đây là giao dịch gửi
                 return {
                   receivedFrom: null,
-                  sentTo: transfer.to,  // Trả về địa chỉ đầy đủ (không chuyển thành lowercase)
+                  sentTo: transfer.to,  // Trả về địa chỉ đầy đủ
                   transactionId: transfer.transaction_id,
-                  amount: transfer.amount,
+                  amount: transfer.amount_str || transfer.amount,  // Ưu tiên dùng amount_str nếu có
                   timestamp: new Date(transfer.block_ts).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })
                 };
               }
             }
           }
           
-          // Nếu không tìm thấy trong 6 tiếng gần nhất, chọn giao dịch gần nhất
+          // Nếu không tìm thấy trong 12 tiếng gần nhất, chọn giao dịch gần nhất
           const latestTransfer = tokenTransfers[0];
           if (latestTransfer) {
             const transferTo = latestTransfer.to ? latestTransfer.to.toLowerCase() : '';
@@ -157,7 +157,7 @@ class RealTimeMonitor {
                 receivedFrom: latestTransfer.from,  // Trả về địa chỉ đầy đủ
                 sentTo: null,
                 transactionId: latestTransfer.transaction_id,
-                amount: latestTransfer.amount,
+                amount: latestTransfer.amount_str || latestTransfer.amount,  // Ưu tiên dùng amount_str nếu có
                 timestamp: new Date(latestTransfer.block_ts).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })
               };
             } else if (transferFrom === addressLower) {
@@ -166,7 +166,7 @@ class RealTimeMonitor {
                 receivedFrom: null,
                 sentTo: latestTransfer.to,  // Trả về địa chỉ đầy đủ
                 transactionId: latestTransfer.transaction_id,
-                amount: latestTransfer.amount,
+                amount: latestTransfer.amount_str || latestTransfer.amount,  // Ưu tiên dùng amount_str nếu có
                 timestamp: new Date(latestTransfer.block_ts).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })
               };
             }
@@ -182,38 +182,66 @@ class RealTimeMonitor {
   }
 
   formatNumber(num) {
-    // Convert to number if it's a string
-    const number = typeof num === 'string' ? parseFloat(num) : num;
+    // Handle the number based on TRON API format (where 7000 USDT might appear as 7000000000)
+    // TRON USDT has 6 decimal places, so divide by 1,000,000 to get the actual value
+    
+    // Convert to number to handle both string and numeric inputs
+    const floatNum = typeof num === 'string' ? parseFloat(num) : num;
     
     // If it's NaN, return the original value
-    if (isNaN(number)) {
-      return num;
+    if (isNaN(floatNum)) {
+      return typeof num === 'string' ? num : num.toString();
     }
     
-    // Use toPrecision to get the shortest representation without trailing zeros
-    // Convert to number first to eliminate floating point precision issues
-    const floatNum = parseFloat(number);
-    
-    // Convert to string and process to remove trailing zeros properly
-    let str = floatNum.toString();
-    
-    // If it contains a decimal point, process the decimal part
-    if (str.includes('.')) {
-      // Split into integer and decimal parts
-      const [integerPart, decimalPart] = str.split('.');
+    // Check if the number is in the typical TRON format (with 6 extra decimal places)
+    // If it appears to be a typical USDT amount multiplied by 1,000,000
+    if (floatNum >= 1000000 && floatNum % 1 === 0) { // Integer that's at least 1 million
+      // Likely a TRON USDT value that needs to be divided by 1,000,000
+      const actualValue = floatNum / 1000000;
       
-      // Remove trailing zeros from decimal part
-      const trimmedDecimal = decimalPart.replace(/0+$/, '');
+      // Convert to string to process decimals
+      let str = actualValue.toString();
       
-      // Return integer part only if decimal part is empty after trimming
-      if (trimmedDecimal === '') {
-        return integerPart;
+      // If it contains a decimal point, process the decimal part
+      if (str.includes('.')) {
+        // Split into integer and decimal parts
+        const [integerPart, decimalPart] = str.split('.');
+        
+        // Remove trailing zeros from decimal part
+        const trimmedDecimal = decimalPart.replace(/0+$/, '');
+        
+        // Return integer part only if decimal part is empty after trimming
+        if (trimmedDecimal === '') {
+          return integerPart;
+        } else {
+          return `${integerPart}.${trimmedDecimal}`;
+        }
       } else {
-        return `${integerPart}.${trimmedDecimal}`;
+        // If no decimal point, return as is
+        return str;
       }
     } else {
-      // If no decimal point, return as is
-      return str;
+      // For normal numbers, preserve the original format
+      const numStr = typeof num === 'string' ? num : num.toString();
+      
+      // If it contains a decimal point, process the decimal part
+      if (numStr.includes('.')) {
+        // Split into integer and decimal parts
+        const [integerPart, decimalPart] = numStr.split('.');
+        
+        // Remove trailing zeros from decimal part
+        const trimmedDecimal = decimalPart.replace(/0+$/, '');
+        
+        // Return integer part only if decimal part is empty after trimming
+        if (trimmedDecimal === '') {
+          return integerPart;
+        } else {
+          return `${integerPart}.${trimmedDecimal}`;
+        }
+      } else {
+        // If no decimal point, return as is
+        return numStr;
+      }
     }
   }
   

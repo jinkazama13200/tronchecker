@@ -165,48 +165,34 @@ class TronBalanceMonitorWithTelegram {
   }
 
   formatNotification(changes, address) {
-    let message = `┌─ 🚨 *BIẾN ĐỘNG SỐ DƯ ĐƯỢC PHÁT HIỆN*\n`;
-    message += `├─ 📍 *Địa chỉ ví:* \`${address}\`\n`;
-    message += `└─────────────────────────────────────\n\n`;
+    let message = `🚨 *THÔNG BÁO BIẾN ĐỘNG SỐ DƯ*\n\n`;
     
     for (const change of changes) {
       if (change.direction === 'TĂNG') {
-        message += `┌─ 📈 *${change.type}* tăng\n`;
-        message += `├─ *Trước:* ${change.previous}\n`;
-        message += `├─ *Hiện tại:* ${change.current}\n`;
-        message += `├─ *Thay đổi:* +${change.change}\n`;
-        if (change.relatedAddresses && change.relatedAddresses.receivedFrom) {
-          message += `├─ 📥 *Từ:* \`${change.relatedAddresses.receivedFrom.substring(0, 12)}...\`\n`;
-          message += `├─ 🕒 *Thời gian:* ${change.relatedAddresses.timestamp}\n`;
-          message += `└─ 🔗 *Giao dịch:* \`${change.relatedAddresses.transactionId.substring(0, 12)}...\`\n\n`;
-        } else {
-          message += `└─────────────────────────────────────\n\n`;
-        }
+        message += `📥 *Địa chỉ nhận:* \`${address}\`\n`;
+        message += `📤 *Địa chỉ chuyển:* \`${change.relatedAddresses?.receivedFrom.substring(0, 12) || 'N/A'}...\`\n`;
+        message += `📈 *Số dư biến động:* +${change.change}\n`;
+        message += `💰 *Số dư hiện tại:* ${change.current}\n`;
+        message += `⏰ *Thời gian:* ${change.relatedAddresses?.timestamp || new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}\n\n`;
       } else if (change.direction === 'GIẢM') {
-        message += `┌─ 📉 *${change.type}* giảm\n`;
-        message += `├─ *Trước:* ${change.previous}\n`;
-        message += `├─ *Hiện tại:* ${change.current}\n`;
-        message += `├─ *Thay đổi:* ${change.change}\n`;
-        if (change.relatedAddresses && change.relatedAddresses.sentTo) {
-          message += `├─ 📤 *Tới:* \`${change.relatedAddresses.sentTo.substring(0, 12)}...\`\n`;
-          message += `├─ 🕒 *Thời gian:* ${change.relatedAddresses.timestamp}\n`;
-          message += `└─ 🔗 *Giao dịch:* \`${change.relatedAddresses.transactionId.substring(0, 12)}...\`\n\n`;
-        } else {
-          message += `└─────────────────────────────────────\n\n`;
-        }
+        message += `📤 *Địa chỉ nhận:* \`${change.relatedAddresses?.sentTo.substring(0, 12) || 'N/A'}...\`\n`;
+        message += `📥 *Địa chỉ chuyển:* \`${address}\`\n`;
+        message += `📉 *Số dư biến động:* ${change.change}\n`;
+        message += `💰 *Số dư hiện tại:* ${change.current}\n`;
+        message += `⏰ *Thời gian:* ${change.relatedAddresses?.timestamp || new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}\n\n`;
       } else if (change.direction === 'MỚI') {
-        message += `┌─ 🆕 *${change.type}* mới\n`;
-        message += `├─ *Số lượng:* ${change.current}\n`;
-        message += `└─────────────────────────────────────\n\n`;
+        message += `🆕 *Loại token:* ${change.type}\n`;
+        message += `💰 *Số dư hiện tại:* ${change.current}\n`;
+        message += `⏰ *Thời gian:* ${new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}\n\n`;
       } else if (change.direction === 'MẤT') {
-        message += `┌─ ❌ *${change.type}* mất\n`;
-        message += `├─ *Trước:* ${change.previous}\n`;
-        message += `├─ *Hiện tại:* 0.00000000\n`;
-        message += `└─────────────────────────────────────\n\n`;
+        message += `❌ *Loại token:* ${change.type}\n`;
+        message += `📉 *Số dư biến động:* -${change.previous}\n`;
+        message += `💰 *Số dư hiện tại:* 0.00000000\n`;
+        message += `⏰ *Thời gian:* ${new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}\n\n`;
       }
     }
     
-    message += `⏰ *Thời gian:* ${new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}`;
+    message += `📍 *Địa chỉ ví:* \`${address}\``;
     
     return message;
   }

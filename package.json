@@ -10,6 +10,7 @@
     "simple-check": "node simple_check.js",
     "fast-check": "node fast_check.js",
     "super-fast-check": "node super_fast_check.js",
+    "realtime": "node realtime_monitor.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [

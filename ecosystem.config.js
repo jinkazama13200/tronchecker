@@ -5,6 +5,7 @@ module.exports = {
     cwd: '/home/codespace/clawd/tron_checker',
     args: 'TQtRKmheCo6tSe725NtywzHiXqqs3LMdxU',  // Thay bằng địa chỉ ví của bạn
     instances: 1,
+    exec_mode: 'fork',
     autorestart: true,
     watch: false,
     max_memory_restart: '1G',

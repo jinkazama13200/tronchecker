@@ -104,13 +104,13 @@ class TronBalanceMonitorWithTelegram {
   async getRelatedAddresses(address, tokenSymbol) {
     try {
       // Lấy lịch sử giao dịch gần đây cho token cụ thể (siêu nhanh)
-      const historyUrl = `https://api.tronscan.org/api/transfer/trc20?relatedAddress=${address}&limit=3&start=0&sort=-timestamp`;
+      const historyUrl = `https://api.tronscan.org/api/transfer/trc20?relatedAddress=${address}&limit=10&start=0&sort=-timestamp`;
       const historyResponse = await axios.get(historyUrl, {
         headers: {
           'TRON-PRO-API-KEY': this.apiKey,
           'User-Agent': 'Mozilla/5.0 (compatible; SuperFastTRONMonitor/1.0)'
         },
-        timeout: 3000  // Siêu giảm timeout để tăng tốc
+        timeout: 5000  // Tăng timeout nhẹ để đảm bảo nhận được dữ liệu
       });
 
       const historyData = historyResponse.data;
@@ -122,8 +122,39 @@ class TronBalanceMonitorWithTelegram {
         );
 
         if (tokenTransfers.length > 0) {
-          const latestTransfer = tokenTransfers[0]; // Giao dịch gần nhất
+          // Tìm giao dịch gần nhất phù hợp với thời điểm thay đổi số dư
+          const now = Date.now();
+          const twoHoursAgo = now - (2 * 60 * 60 * 1000); // 2 tiếng trước
           
+          for (const transfer of tokenTransfers) {
+            const transferTime = transfer.block_ts;
+            
+            // Kiểm tra xem giao dịch có trong khoảng thời gian gần đây không
+            if (transferTime >= twoHoursAgo) {
+              if (transfer.to === address.toLowerCase()) {
+                // Đây là giao dịch nhận
+                return {
+                  receivedFrom: transfer.from,
+                  sentTo: null,
+                  transactionId: transfer.transaction_id,
+                  amount: transfer.amount,
+                  timestamp: new Date(transfer.block_ts).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })
+                };
+              } else if (transfer.from === address.toLowerCase()) {
+                // Đây là giao dịch gửi
+                return {
+                  receivedFrom: null,
+                  sentTo: transfer.to,
+                  transactionId: transfer.transaction_id,
+                  amount: transfer.amount,
+                  timestamp: new Date(transfer.block_ts).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })
+                };
+              }
+            }
+          }
+          
+          // Nếu không tìm thấy trong 2 tiếng gần nhất, chọn giao dịch gần nhất
+          const latestTransfer = tokenTransfers[0];
           if (latestTransfer.to === address.toLowerCase()) {
             // Đây là giao dịch nhận
             return {
@@ -162,30 +193,30 @@ class TronBalanceMonitorWithTelegram {
         message += `💰 *Số dư hiện tại:* ${change.current}\n`;
         message += `📊 *Số dư biến động:* +${change.change}\n`;
         message += `📥 *Địa chỉ nhận:* \`${address}\`\n`;
-        message += `📤 *Địa chỉ chuyển:* \`N/A\`\n`;
-        message += `⏰ *Thời gian:* ${new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}\n\n`;
+        message += `📤 *Địa chỉ chuyển:* \`${change.relatedAddresses?.receivedFrom?.substring(0, 12) || 'N/A'}...\`\n`;
+        message += `⏰ *Thời gian:* ${change.relatedAddresses?.timestamp || new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}\n\n`;
       } else if (change.direction === 'GIẢM') {
         message += `🔴 *Số dư bị giảm*\n`;
         message += `💰 *Số dư hiện tại:* ${change.current}\n`;
         message += `📊 *Số dư biến động:* -${change.change}\n`;
-        message += `📥 *Địa chỉ nhận:* \`N/A\`\n`;
+        message += `📥 *Địa chỉ nhận:* \`${change.relatedAddresses?.sentTo?.substring(0, 12) || 'N/A'}...\`\n`;
         message += `📤 *Địa chỉ chuyển:* \`${address}\`\n`;
-        message += `⏰ *Thời gian:* ${new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}\n\n`;
+        message += `⏰ *Thời gian:* ${change.relatedAddresses?.timestamp || new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}\n\n`;
       } else if (change.direction === 'MỚI') {
         message += `🟢 *Số dư được cộng*\n`;
         message += `🆕 *Loại token:* ${change.type}\n`;
         message += `💰 *Số dư hiện tại:* ${change.current}\n`;
         message += `📥 *Địa chỉ nhận:* \`${address}\`\n`;
-        message += `📤 *Địa chỉ chuyển:* \`N/A\`\n`;
-        message += `⏰ *Thời gian:* ${new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}\n\n`;
+        message += `📤 *Địa chỉ chuyển:* \`${change.relatedAddresses?.receivedFrom?.substring(0, 12) || 'N/A'}...\`\n`;
+        message += `⏰ *Thời gian:* ${change.relatedAddresses?.timestamp || new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}\n\n`;
       } else if (change.direction === 'MẤT') {
         message += `🔴 *Số dư bị giảm*\n`;
         message += `❌ *Loại token:* ${change.type}\n`;
         message += `📊 *Số dư biến động:* -${change.previous}\n`;
         message += `💰 *Số dư hiện tại:* 0.00000000\n`;
-        message += `📥 *Địa chỉ nhận:* \`N/A\`\n`;
+        message += `📥 *Địa chỉ nhận:* \`${change.relatedAddresses?.sentTo?.substring(0, 12) || 'N/A'}...\`\n`;
         message += `📤 *Địa chỉ chuyển:* \`${address}\`\n`;
-        message += `⏰ *Thời gian:* ${new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}\n\n`;
+        message += `⏰ *Thời gian:* ${change.relatedAddresses?.timestamp || new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}\n\n`;
       }
     }
     

@@ -179,10 +179,25 @@ class RealTimeMonitor {
       return num;
     }
     
-    // Format with thousand separators
-    return number.toLocaleString('vi-VN', {
-      maximumFractionDigits: 8 // Keep up to 8 decimal places
-    });
+    // Separate integer and decimal parts
+    const str = number.toString();
+    const [integerPart, decimalPart] = str.split('.');
+    
+    // Format integer part with thousand separators (using dot as separator)
+    let formattedInteger = '';
+    for (let i = 0; i < integerPart.length; i++) {
+      if (i > 0 && (integerPart.length - i) % 3 === 0) {
+        formattedInteger += '.';
+      }
+      formattedInteger += integerPart[i];
+    }
+    
+    // Return formatted number with original decimal part if exists
+    if (decimalPart !== undefined) {
+      return `${formattedInteger}.${decimalPart}`;
+    } else {
+      return formattedInteger;
+    }
   }
 
   formatNotification(changes, address) {

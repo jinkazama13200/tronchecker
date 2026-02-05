@@ -13,7 +13,7 @@ Có 2 phiên bản:
 - 📱 **Thông báo Telegram** - khi có biến động
 - 📍 **Hiển thị địa chỉ gửi đến** - khi số dư tăng
 - 📤 **Hiển thị địa chỉ gửi đi** - khi số dư giảm
-- 🔢 **Định dạng số dễ đọc** - số có phân cách hàng nghìn (1,000,000)
+- 🔢 **Định dạng số dễ đọc** - số có phân cách hàng nghìn (1.000, 1.000.000)
 - 🔁 **Tự động khởi động lại** - nếu có lỗi
 - 📊 **Hiển thị đầy đủ thông tin** - số dư, biến động, thời gian, địa chỉ liên quan
 

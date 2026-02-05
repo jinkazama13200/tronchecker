@@ -220,12 +220,16 @@ class SuperFastMonitor {
         message += `🟢 *Số dư được cộng*\n`;
         message += `🆕 *Loại token:* ${change.type}\n`;
         message += `💰 *Số dư hiện tại:* ${change.current}\n`;
+        message += `📥 *Địa chỉ nhận:* \`${address}\`\n`;
+        message += `📤 *Địa chỉ chuyển:* \`N/A\`\n`;
         message += `⏰ *Thời gian:* ${new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}\n\n`;
       } else if (change.direction === 'MẤT') {
         message += `🔴 *Số dư bị giảm*\n`;
         message += `❌ *Loại token:* ${change.type}\n`;
         message += `📊 *Số dư biến động:* -${change.previous}\n`;
         message += `💰 *Số dư hiện tại:* ${change.current}\n`;
+        message += `📥 *Địa chỉ nhận:* \`N/A\`\n`;
+        message += `📤 *Địa chỉ chuyển:* \`${address}\`\n`;
         message += `⏰ *Thời gian:* ${new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}\n\n`;
       }
     }

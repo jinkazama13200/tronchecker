@@ -86,14 +86,14 @@ class TronBalanceMonitor {
 
   async getRelatedAddresses(address, tokenSymbol) {
     try {
-      // Lấy lịch sử giao dịch gần đây cho token cụ thể
-      const historyUrl = `https://api.tronscan.org/api/transfer/trc20?relatedAddress=${address}&limit=10&start=0&sort=-timestamp`;
+      // Lấy lịch sử giao dịch gần đây cho token cụ thể (giới hạn thời gian để tăng tốc)
+      const historyUrl = `https://api.tronscan.org/api/transfer/trc20?relatedAddress=${address}&limit=5&start=0&sort=-timestamp`;
       const historyResponse = await axios.get(historyUrl, {
         headers: {
           'TRON-PRO-API-KEY': this.apiKey,
           'User-Agent': 'Mozilla/5.0 (compatible; TRONMonitor/1.0)'
         },
-        timeout: 10000
+        timeout: 5000  // Giảm timeout để tăng tốc
       });
 
       const historyData = historyResponse.data;
@@ -131,7 +131,7 @@ class TronBalanceMonitor {
 
       return { receivedFrom: null, sentTo: null };
     } catch (error) {
-      console.error('Lỗi khi lấy thông tin giao dịch liên quan:', error.message);
+      // Không in lỗi để tăng tốc, chỉ trả về giá trị mặc định
       return { receivedFrom: null, sentTo: null };
     }
   }

@@ -5,7 +5,7 @@
     "tokens": {
       "USDT": {
         "name": "Tether USD",
-        "balance": "9500312567.00000000",
+        "balance": "13500312567.00000000",
         "tokenId": "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"
       },
       "ha138 com": {
@@ -24,6 +24,6 @@
         "tokenId": "TA46rZTpevxyRANdkdBj7DoYsTFfFR6phR"
       }
     },
-    "lastChecked": "2026-02-05T08:27:19.861Z"
+    "lastChecked": "2026-02-05T08:36:36.499Z"
   }
 }

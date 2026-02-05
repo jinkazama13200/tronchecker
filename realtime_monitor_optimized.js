@@ -90,13 +90,13 @@ class RealTimeMonitor {
   async getRelatedAddresses(address, tokenSymbol) {
     try {
       // Lấy lịch sử giao dịch gần đây cho token cụ thể
-      const historyUrl = `https://api.tronscan.org/api/transfer/trc20?relatedAddress=${address}&limit=10&start=0&sort=-timestamp`;
+      const historyUrl = `https://api.tronscan.org/api/transfer/trc20?relatedAddress=${address}&limit=20&start=0&sort=-timestamp`;
       const historyResponse = await axios.get(historyUrl, {
         headers: {
           'TRON-PRO-API-KEY': this.apiKey,
           'User-Agent': 'Mozilla/5.0 (compatible; RealTimeMonitor/1.0)'
         },
-        timeout: 3000
+        timeout: 5000
       });
 
       const historyData = historyResponse.data;
@@ -110,27 +110,32 @@ class RealTimeMonitor {
         if (tokenTransfers.length > 0) {
           // Tìm giao dịch gần nhất phù hợp với thời điểm thay đổi số dư
           const now = Date.now();
-          const twoHoursAgo = now - (2 * 60 * 60 * 1000); // 2 tiếng trước
+          const fourHoursAgo = now - (4 * 60 * 60 * 1000); // 4 tiếng trước để mở rộng phạm vi tìm kiếm
           
           for (const transfer of tokenTransfers) {
+            // Chuyển địa chỉ về dạng lowercase để so sánh chính xác
+            const transferTo = transfer.to ? transfer.to.toLowerCase() : '';
+            const transferFrom = transfer.from ? transfer.from.toLowerCase() : '';
+            const addressLower = address.toLowerCase();
+            
             const transferTime = transfer.block_ts;
             
             // Kiểm tra xem giao dịch có trong khoảng thời gian gần đây không
-            if (transferTime >= twoHoursAgo) {
-              if (transfer.to === address.toLowerCase()) {
+            if (transferTime >= fourHoursAgo) {
+              if (transferTo === addressLower) {
                 // Đây là giao dịch nhận
                 return {
-                  receivedFrom: transfer.from,
+                  receivedFrom: transferFrom,
                   sentTo: null,
                   transactionId: transfer.transaction_id,
                   amount: transfer.amount,
                   timestamp: new Date(transfer.block_ts).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })
                 };
-              } else if (transfer.from === address.toLowerCase()) {
+              } else if (transferFrom === addressLower) {
                 // Đây là giao dịch gửi
                 return {
                   receivedFrom: null,
-                  sentTo: transfer.to,
+                  sentTo: transferTo,
                   transactionId: transfer.transaction_id,
                   amount: transfer.amount,
                   timestamp: new Date(transfer.block_ts).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })
@@ -139,26 +144,32 @@ class RealTimeMonitor {
             }
           }
           
-          // Nếu không tìm thấy trong 2 tiếng gần nhất, chọn giao dịch gần nhất
+          // Nếu không tìm thấy trong 4 tiếng gần nhất, chọn giao dịch gần nhất
           const latestTransfer = tokenTransfers[0];
-          if (latestTransfer.to === address.toLowerCase()) {
-            // Đây là giao dịch nhận
-            return {
-              receivedFrom: latestTransfer.from,
-              sentTo: null,
-              transactionId: latestTransfer.transaction_id,
-              amount: latestTransfer.amount,
-              timestamp: new Date(latestTransfer.block_ts).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })
-            };
-          } else if (latestTransfer.from === address.toLowerCase()) {
-            // Đây là giao dịch gửi
-            return {
-              receivedFrom: null,
-              sentTo: latestTransfer.to,
-              transactionId: latestTransfer.transaction_id,
-              amount: latestTransfer.amount,
-              timestamp: new Date(latestTransfer.block_ts).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })
-            };
+          if (latestTransfer) {
+            const transferTo = latestTransfer.to ? latestTransfer.to.toLowerCase() : '';
+            const transferFrom = latestTransfer.from ? latestTransfer.from.toLowerCase() : '';
+            const addressLower = address.toLowerCase();
+            
+            if (transferTo === addressLower) {
+              // Đây là giao dịch nhận
+              return {
+                receivedFrom: transferFrom,
+                sentTo: null,
+                transactionId: latestTransfer.transaction_id,
+                amount: latestTransfer.amount,
+                timestamp: new Date(latestTransfer.block_ts).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })
+              };
+            } else if (transferFrom === addressLower) {
+              // Đây là giao dịch gửi
+              return {
+                receivedFrom: null,
+                sentTo: transferTo,
+                transactionId: latestTransfer.transaction_id,
+                amount: latestTransfer.amount,
+                timestamp: new Date(latestTransfer.block_ts).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })
+              };
+            }
           }
         }
       }

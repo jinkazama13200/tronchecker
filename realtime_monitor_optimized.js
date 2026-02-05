@@ -208,10 +208,12 @@ class RealTimeMonitor {
   
   formatNumberWithUnit(num, unit = '') {
     const formattedNum = this.formatNumber(num);
+    // Always ensure USDT is added for consistency
     if (unit) {
       return `${formattedNum} ${unit}`;
     }
-    return formattedNum;
+    // Default to USDT if no unit specified but we're dealing with USDT
+    return `${formattedNum} USDT`;
   }
 
   formatNotification(changes, address) {

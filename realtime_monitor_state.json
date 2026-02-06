@@ -1,7 +1,7 @@
 {
   "TQtRKmheCo6tSe725NtywzHiXqqs3LMdxU": {
     "address": "TQtRKmheCo6tSe725NtywzHiXqqs3LMdxU",
-    "trxBalance": "19.00338400",
+    "trxBalance": "19.00339700",
     "tokens": {
       "USDT": {
         "name": "Tether USD",
@@ -24,6 +24,6 @@
         "tokenId": "TA46rZTpevxyRANdkdBj7DoYsTFfFR6phR"
       }
     },
-    "lastChecked": "2026-02-06T01:31:09.399Z"
+    "lastChecked": "2026-02-06T02:11:59.214Z"
   }
 }

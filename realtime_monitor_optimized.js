@@ -70,7 +70,16 @@ class RealTimeMonitor {
       // Trích xuất các token TRC20
       if (data.trc20token_balances && data.trc20token_balances.length > 0) {
         for (const token of data.trc20token_balances) {
-          let formattedBalance = parseFloat(token.balance).toFixed(8);
+          // Xử lý số dư TRON (chia cho 1,000,000 để chuyển về giá trị thực)
+          let rawBalance = parseFloat(token.balance);
+          let formattedBalance;
+          
+          // Nếu số dư lớn hơn hoặc bằng 1 triệu, có thể là số từ API TRON chưa được chia
+          if (rawBalance >= 1000000 && rawBalance % 1 === 0) {
+            formattedBalance = (rawBalance / 1000000).toFixed(8);
+          } else {
+            formattedBalance = rawBalance.toFixed(8);
+          }
           
           balanceData.tokens[token.tokenAbbr] = {
             name: token.tokenName,

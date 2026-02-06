@@ -247,8 +247,8 @@ class RealTimeMonitor {
   
   formatNumberWithUnit(num, unit = 'USDT') {
     const formattedNum = this.formatNumber(num);
-    // Always ensure USDT is added for consistency without comma
-    return `${formattedNum} ${unit}`;
+    // Always ensure USDT is added for consistency with period after the number
+    return `${formattedNum}. ${unit}`;
   }
 
   formatNotification(changes, address) {
